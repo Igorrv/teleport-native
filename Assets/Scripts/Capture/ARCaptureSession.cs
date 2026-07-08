@@ -40,6 +40,8 @@ namespace TeleportNative.Capture
         private void Awake()
         {
             _cameraManager = GetComponent<ARCameraManager>();
+            if (_arCamera == null)
+                _arCamera = GetComponent<Camera>();
             _selector.Reset();
         }
 

@@ -33,13 +33,16 @@ namespace TeleportNative.Core
         public static readonly Color GlassBorder     = new(1, 1, 1, 0.12f);
         public static readonly Color GlassHighlight  = new(1, 1, 1, 0.18f);
 
-        // ---- Tipografia ----
-        public const float DisplaySize  = 34f;
-        public const float TitleSize    = 26f;
-        public const float HeadingSize  = 19f;
-        public const float BodySize     = 16f;
-        public const float CaptionSize  = 13f;
-        public const float MicroSize    = 11f;
+        private static bool IsPhone =>
+            Application.isMobilePlatform || (Screen.width < Screen.height && Screen.width <= 520);
+
+        // ---- Tipografia (maior no celular) ----
+        public static float DisplaySize  => IsPhone ? 38f : 34f;
+        public static float TitleSize    => IsPhone ? 30f : 26f;
+        public static float HeadingSize  => IsPhone ? 22f : 19f;
+        public static float BodySize     => IsPhone ? 18f : 16f;
+        public static float CaptionSize  => IsPhone ? 15f : 13f;
+        public static float MicroSize    => IsPhone ? 12f : 11f;
 
         // ---- Espacamento ----
         public const float SpaceXS  = 4f;
@@ -57,8 +60,8 @@ namespace TeleportNative.Core
         public const float RadiusPill = 999f;
 
         // ---- Componentes ----
-        public const float ButtonHeight = 54f;
-        public const float TouchTarget  = 48f;
+        public static float ButtonHeight => IsPhone ? 60f : 54f;
+        public static float TouchTarget  => IsPhone ? 52f : 48f;
         public const float CardHeight   = 100f;
         public const float HeaderHeight = 100f;
 

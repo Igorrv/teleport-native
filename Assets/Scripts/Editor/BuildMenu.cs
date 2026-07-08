@@ -11,7 +11,7 @@ namespace TeleportNative.Editor
     public static class BuildMenu
     {
         private const string BundleId = "com.teleportnative.app";
-        private const string CameraUsage = "Usamos a camera para capturar o ambiente e criar espacos 3D.";
+        private const string CameraUsage = "Teleport Native usa a câmera para capturar o ambiente em realidade aumentada e criar o espaço 3D navegável.";
 
         [MenuItem("Teleport/1. Preparar iOS")]
         public static void PrepIOS()

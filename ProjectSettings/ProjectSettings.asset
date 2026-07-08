@@ -331,7 +331,8 @@ PlayerSettings:
   enableInternalProfiler: 0
   logObjCUncaughtExceptions: 1
   enableCrashReportAPI: 0
-  cameraUsageDescription: Usamos a camera para capturar o ambiente e criar espacos
+  cameraUsageDescription: Teleport Native usa a camera para capturar o ambiente em realidade
+    aumentada e criar o espaco 3D navegavel.
     3D.
   locationUsageDescription: 
   microphoneUsageDescription: 
@@ -688,7 +689,7 @@ PlayerSettings:
   qnxGraphicConfPath: 
   apiCompatibilityLevel: 6
   captureStartupLogs: {}
-  activeInputHandler: 0
+  activeInputHandler: 2
   windowsGamepadBackendHint: 0
   enableDirectStorage: 0
   cloudProjectId: 

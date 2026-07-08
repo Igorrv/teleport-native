@@ -179,6 +179,9 @@ namespace TeleportNative.UI
             }
             var btn = go.GetComponent<Button>();
             btn.onClick.AddListener(onClick);
+            var le = go.AddComponent<LayoutElement>();
+            le.minHeight = T.ButtonHeight;
+            le.preferredHeight = T.ButtonHeight;
 
             var lbl = Text(rt, label, T.BodySize, primary ? Color.white : T.Text, TextAnchor.MiddleCenter, wrap: false, fit: false);
             Stretch((RectTransform)lbl.transform);

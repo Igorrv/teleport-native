@@ -18,7 +18,7 @@ namespace TeleportNative.UI
             UIFactory.Panel(Root, "bg", T.Background);
             UiChrome.Header(Root, "Seus espacos", "Capture ambientes reais e navegue em 3D");
 
-            FooterButton("Capturar com camera", OnNewSpace, accent: true);
+            FooterButton("Capturar com câmera", OnNewSpace, accent: true);
 #if UNITY_EDITOR
             FooterButton("Demo: viewer sem AR", OnDemoViewer, top: 120, accent: false);
 #endif
@@ -126,7 +126,7 @@ namespace TeleportNative.UI
             var rt = (RectTransform)go.transform;
             rt.SetParent(Root, false);
             rt.anchorMin = new Vector2(0, 0); rt.anchorMax = new Vector2(1, 0);
-            rt.pivot = new Vector2(0.5f, 0); rt.sizeDelta = new Vector2(0, 110);
+            rt.pivot = new Vector2(0.5f, 0); rt.sizeDelta = new Vector2(0, MobileUi.IsPhone ? 130f : 110f);
             rt.anchoredPosition = new Vector2(0, top);
             var btn = UIFactory.Button(rt, label, onClick, accent);
             Stretch(btn);

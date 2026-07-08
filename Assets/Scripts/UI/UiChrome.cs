@@ -37,11 +37,19 @@ namespace TeleportNative.UI
 
         public static RectTransform BottomSheet(Transform parent, float height)
         {
-            var rt = UIFactory.Panel(parent, "bottomSheet", new Color(T.Surface.r, T.Surface.g, T.Surface.b, 0.94f));
-            rt.anchorMin = Vector2.zero; rt.anchorMax = Vector2.one;
-            rt.offsetMin = new Vector2(0, 0); rt.offsetMax = new Vector2(0, 0);
+            var go = new GameObject("bottomSheet", typeof(RectTransform), typeof(Image));
+            var rt = (RectTransform)go.transform;
+            rt.SetParent(parent, false);
+            rt.anchorMin = new Vector2(0, 0);
+            rt.anchorMax = new Vector2(1, 0);
             rt.pivot = new Vector2(0.5f, 0);
             rt.sizeDelta = new Vector2(0, height);
+            rt.anchoredPosition = Vector2.zero;
+            var img = go.GetComponent<Image>();
+            img.sprite = UIFactory.RoundedSprite(Mathf.RoundToInt(T.RadiusL));
+            img.type = UnityEngine.UI.Image.Type.Sliced;
+            img.color = new Color(T.Surface.r, T.Surface.g, T.Surface.b, 0.96f);
+            img.raycastTarget = true;
             return rt;
         }
 

@@ -72,6 +72,9 @@ namespace TeleportNative.Editor
             if (capture == null)
                 capture = cam.gameObject.AddComponent<ARCaptureSession>();
 
+            if (arRig.GetComponent<ArSessionStarter>() == null)
+                arRig.AddComponent<ArSessionStarter>();
+
             var bootstrap = Object.FindFirstObjectByType<AppBootstrap>();
             if (bootstrap != null)
                 SetCaptureRef(bootstrap, capture);

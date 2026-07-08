@@ -35,8 +35,8 @@ namespace TeleportNative.Editor
             canvas.sortingOrder = 100;
             var scaler = canvasGo.GetComponent<CanvasScaler>();
             scaler.uiScaleMode = CanvasScaler.ScaleMode.ScaleWithScreenSize;
-            scaler.referenceResolution = new Vector2(1080, 1920);
-            scaler.matchWidthOrHeight = 0.5f;
+            scaler.referenceResolution = new Vector2(430, 932);
+            scaler.matchWidthOrHeight = 0f;
 
             // AR Rig (ativo so em Capture). Apenas ARSession aqui; a AR Camera (XROrigin) e
             // adicionada depois pelo menu do Unity (GameObject > XR > XR Origin (Mobile AR)).

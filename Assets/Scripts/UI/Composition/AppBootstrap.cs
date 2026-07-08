@@ -43,7 +43,10 @@ namespace TeleportNative.UI
             var recon = new ReconstructionClient(provider, cache, library, log);
             var flow = new AppFlow();
 
-            _viewer.Bind(profiler, pacer, null); // adapter interno ao viewer
+            _viewer.Bind(profiler, pacer, null);
+
+            if (_uiRoot != null)
+                MobileUi.Configure(_uiRoot);
 
             var ctx = new AppContext(
                 log, config, haptics, profiler, pacer, flow,

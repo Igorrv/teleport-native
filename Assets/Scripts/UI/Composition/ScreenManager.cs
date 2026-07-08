@@ -21,12 +21,18 @@ namespace TeleportNative.UI
             _ctx = ctx;
             _root = root;
 
-            Add<OnboardingScreen>(ScreenId.Onboarding);
-            Add<LibraryScreen>(ScreenId.Library);
-            Add<CaptureScreen>(ScreenId.Capture);
-            Add<ProcessingScreen>(ScreenId.Processing);
-            Add<ViewerScreen>(ScreenId.Viewer);
-            Add<ShareScreen>(ScreenId.Share);
+            var safeGo = new GameObject("SafeArea", typeof(RectTransform));
+            var safeRt = (RectTransform)safeGo.transform;
+            safeRt.SetParent(_root.transform, false);
+            UIFactory.Stretch(safeRt);
+            safeGo.AddComponent<SafeAreaFitter>();
+
+            Add<OnboardingScreen>(ScreenId.Onboarding, safeRt);
+            Add<LibraryScreen>(ScreenId.Library, safeRt);
+            Add<CaptureScreen>(ScreenId.Capture, safeRt);
+            Add<ProcessingScreen>(ScreenId.Processing, safeRt);
+            Add<ViewerScreen>(ScreenId.Viewer, safeRt);
+            Add<ShareScreen>(ScreenId.Share, safeRt);
 
             foreach (var kv in _map) kv.Value.Hide();
 
@@ -38,11 +44,11 @@ namespace TeleportNative.UI
             ToggleRigs(start);
         }
 
-        private T Add<T>(ScreenId key) where T : AppScreen
+        private T Add<T>(ScreenId key, RectTransform parent) where T : AppScreen
         {
             var go = new GameObject(key.ToString(), typeof(RectTransform));
             var rt = (RectTransform)go.transform;
-            rt.SetParent(_root.transform, false);
+            rt.SetParent(parent, false);
             UIFactory.Stretch(rt);
             var comp = go.AddComponent<T>();
             comp.Init(_ctx);
