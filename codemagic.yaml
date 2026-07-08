@@ -1,9 +1,10 @@
 workflows:
+
   ios-sideload:
 
     name: Teleport Native - iOS IPA
 
-    max_build_duration: 120
+    max_build_duration: 180
 
     instance_type: mac_mini_m2
 
@@ -11,20 +12,27 @@ workflows:
     environment:
 
       groups:
+
         - codemagic
 
+
       vars:
+
         UNITY_VERSION: "6000.5.2f1"
+        UNITY_CHANGESET: "eb73d3b415a1"
         BUNDLE_ID: "com.teleportnative.app"
+
 
       xcode: latest
       cocoapods: default
+
 
 
     cache:
 
       cache_paths:
 
+        - $HOME/Library/Unity
         - $CM_BUILD_DIR/Library
 
 
@@ -32,60 +40,99 @@ workflows:
     scripts:
 
 
-      - name: Setup Unity
+      - name: Install Unity Editor
 
         script: |
+
           set -e
 
-          echo "Searching Unity"
 
-
-          if [ -x "/Applications/Unity/Editor/Unity" ]; then
-
-            UNITY="/Applications/Unity/Editor/Unity"
-
-          else
-
-            UNITY=$(find /Applications -type f -path "*Unity.app/Contents/MacOS/Unity" | head -1)
-
-          fi
+          echo "Installing Unity Editor"
 
 
 
-          if [ -z "$UNITY" ]; then
+          UNITY_PATH="$HOME/Unity/Hub/Editor/$UNITY_VERSION/Unity.app/Contents/MacOS/Unity"
 
-            echo "Unity not found"
 
-            find /Applications -iname "*Unity*" || true
 
-            exit 1
+          if [ -f "$UNITY_PATH" ]; then
+
+              echo "Unity already exists"
+
+              echo "UNITY_BIN=$UNITY_PATH" >> $CM_ENV
+
+              exit 0
 
           fi
 
 
 
-          echo "Unity found:"
-          echo "$UNITY"
+          mkdir -p "$HOME/Unity/Hub/Editor"
 
 
-          echo "UNITY=$UNITY" >> $CM_ENV
+
+          echo "Downloading Unity"
+
+
+
+          curl -L \
+          "https://download.unity3d.com/download_unity/$UNITY_CHANGESET/MacEditorInstaller/Unity-$UNITY_VERSION.pkg" \
+          -o /tmp/unity.pkg
+
+
+
+          echo "Installing Unity"
+
+
+
+          sudo installer \
+          -pkg /tmp/unity.pkg \
+          -target /
+
+
+
+          UNITY_BIN=$(find /Applications -path "*Unity.app/Contents/MacOS/Unity" -type f | head -1)
+
+
+
+          if [ -z "$UNITY_BIN" ]; then
+
+              echo "Unity install failed"
+
+              find /Applications -name "*Unity*" || true
+
+              exit 1
+
+          fi
+
+
+
+          echo "FOUND:"
+          echo "$UNITY_BIN"
+
+
+          echo "UNITY_BIN=$UNITY_BIN" >> $CM_ENV
+
+
 
 
 
       - name: Unity Export Xcode
 
         script: |
+
           set -e
 
 
           source $CM_ENV
 
 
+
           mkdir -p "$CM_BUILD_DIR/Build"
 
 
 
-          "$UNITY" \
+          "$UNITY_BIN" \
           -batchmode \
           -nographics \
           -quit \
@@ -95,29 +142,16 @@ workflows:
 
 
 
-          if [ ! -d "$CM_BUILD_DIR/Build/Xcode" ]; then
-
-            echo "Xcode project missing"
-
-            cat "$CM_BUILD_DIR/Build/codemagic-unity.log"
-
-            exit 1
-
-          fi
 
 
-
-
-      - name: Build Xcode Archive
+      - name: Build Archive
 
         script: |
+
           set -e
 
 
           cd "$CM_BUILD_DIR/Build/Xcode"
-
-
-          mkdir -p "$CM_BUILD_DIR/Build/ios"
 
 
 
@@ -136,6 +170,7 @@ workflows:
       - name: Export IPA
 
         script: |
+
           set -e
 
 
@@ -143,17 +178,19 @@ workflows:
 
 
 
-          printf '%s\n' \
-          '<?xml version="1.0" encoding="UTF-8"?>' \
-          '<plist version="1.0">' \
-          '<dict>' \
-          '<key>method</key>' \
-          '<string>development</string>' \
-          '<key>signingStyle</key>' \
-          '<string>automatic</string>' \
-          '</dict>' \
-          '</plist>' \
-          > "$CM_BUILD_DIR/Build/ios/ExportOptions.plist"
+          python3 <<EOF
+
+import plistlib
+
+data = {
+    "method":"development",
+    "signingStyle":"automatic"
+}
+
+with open("$CM_BUILD_DIR/Build/ios/ExportOptions.plist","wb") as f:
+    plistlib.dump(data,f)
+
+EOF
 
 
 
@@ -171,19 +208,3 @@ workflows:
       - Build/ios/ipa/*.ipa
 
       - Build/codemagic-unity.log
-
-
-
-    publishing:
-
-      email:
-
-        recipients:
-
-          - user@example.com
-
-        notify:
-
-          success: true
-
-          failure: true
