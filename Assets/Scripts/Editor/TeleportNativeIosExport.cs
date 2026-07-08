@@ -22,10 +22,10 @@ namespace TeleportNative.Editor
         [MenuItem("Teleport/8. Export iOS (Xcode -> ios/)")]
         public static void Export()
         {
-            if (Application.platform != RuntimePlatform.OSXEditor)
+            if (Application.platform != RuntimePlatform.OSXEditor && !Application.isBatchMode)
             {
                 Debug.LogError("[Teleport] Export iOS exige Unity macOS (modulo iOS). " +
-                               "No Windows use Codemagic workflow ios-test (Unity roda na nuvem).");
+                               "No Windows use CI (GitHub Actions / Codemagic).");
                 ExitBatch(1);
                 return;
             }

@@ -59,11 +59,11 @@ jobs:
         with:
           unityVersion: ${{ env.UNITY_VERSION }}
           targetPlatform: iOS
-          iosVersion: ${{ env.IOS_MIN }}
           projectPath: .
           buildMethod: TeleportNative.Editor.BuildiOS.Build
           allowDirtyBuild: true
           versioning: None
+          customParameters: -logFile Build/unity-export.log
 
       - name: Verificar export Xcode
         run: |
@@ -76,7 +76,12 @@ jobs:
       - name: CocoaPods
         run: |
           cd ios
-          pod install --repo-update
+          if [ ! -f Unity-iPhone.xcworkspace/contents.xcworkspacedata ]; then
+            pod install --repo-update
+          else
+            pod install --repo-update || pod install
+          fi
+          test -d Unity-iPhone.xcworkspace || { echo "::error::xcworkspace ausente apos pod install"; exit 1; }
 
       # --- Fase 1: IPA unsigned (Sideloadly assina no Windows) ---
       - name: Build unsigned .app

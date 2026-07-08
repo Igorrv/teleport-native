@@ -90,7 +90,7 @@ namespace TeleportNative.UI
             rt.SetParent(parent, false);
             var img = go.GetComponent<Image>();
             img.sprite = RoundedSprite(Mathf.RoundToInt(radius));
-            img.type = Image.Type.Sliced;
+            img.type = UnityEngine.UI.Image.Type.Sliced;
             img.color = bg;
             if (elevation)
             {
@@ -169,7 +169,7 @@ namespace TeleportNative.UI
             rt.sizeDelta = new Vector2(0, T.ButtonHeight);
             var img = go.GetComponent<Image>();
             img.sprite = RoundedSprite(Mathf.RoundToInt(T.RadiusL));
-            img.type = Image.Type.Sliced;
+            img.type = UnityEngine.UI.Image.Type.Sliced;
             img.color = primary ? T.Primary : T.SurfaceRaised;
             if (primary)
             {
