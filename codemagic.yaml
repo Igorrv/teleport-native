@@ -10,23 +10,15 @@ workflows:
 
     environment:
 
-      unity: 6000.5.2f1
-
-      xcode: latest
-
-      cocoapods: default
-
-
       groups:
         - codemagic
 
-
       vars:
+        UNITY_VERSION: "6000.5.2f1"
+        BUNDLE_ID: "com.teleportnative.app"
 
-        BUNDLE_ID: com.teleportnative.app
-
-        UNITY_VERSION: 6000.5.2f1
-
+      xcode: latest
+      cocoapods: default
 
 
     cache:
@@ -35,48 +27,65 @@ workflows:
 
         - $CM_BUILD_DIR/Library
 
-        - $HOME/Library/Unity
-
 
 
     scripts:
 
 
-      - name: Check Unity
+      - name: Setup Unity
 
         script: |
-
           set -e
 
-
-          echo "Checking Unity"
-
-
-          which unity || true
+          echo "Searching Unity"
 
 
-          echo "Unity version"
+          if [ -x "/Applications/Unity/Editor/Unity" ]; then
+
+            UNITY="/Applications/Unity/Editor/Unity"
+
+          else
+
+            UNITY=$(find /Applications -type f -path "*Unity.app/Contents/MacOS/Unity" | head -1)
+
+          fi
 
 
-          unity -version || true
+
+          if [ -z "$UNITY" ]; then
+
+            echo "Unity not found"
+
+            find /Applications -iname "*Unity*" || true
+
+            exit 1
+
+          fi
+
+
+
+          echo "Unity found:"
+          echo "$UNITY"
+
+
+          echo "UNITY=$UNITY" >> $CM_ENV
 
 
 
       - name: Unity Export Xcode
 
         script: |
-
           set -e
+
+
+          source $CM_ENV
 
 
           mkdir -p "$CM_BUILD_DIR/Build"
 
 
 
-          echo "Exporting iOS Xcode project"
-
-
-          unity \
+          "$UNITY" \
           -batchmode \
           -nographics \
           -quit \
@@ -88,27 +97,24 @@ workflows:
 
           if [ ! -d "$CM_BUILD_DIR/Build/Xcode" ]; then
 
-              echo "Xcode project was not created"
+            echo "Xcode project missing"
 
+            cat "$CM_BUILD_DIR/Build/codemagic-unity.log"
 
-              cat "$CM_BUILD_DIR/Build/codemagic-unity.log" || true
-
-
-              exit 1
+            exit 1
 
           fi
 
 
 
-      - name: Build Archive
+
+      - name: Build Xcode Archive
 
         script: |
-
           set -e
 
 
           cd "$CM_BUILD_DIR/Build/Xcode"
-
 
 
           mkdir -p "$CM_BUILD_DIR/Build/ios"
@@ -125,10 +131,11 @@ workflows:
 
 
 
+
+
       - name: Export IPA
 
         script: |
-
           set -e
 
 
@@ -136,24 +143,17 @@ workflows:
 
 
 
-          cat > "$CM_BUILD_DIR/Build/ios/ExportOptions.plist" <<'PLIST'
-<?xml version="1.0" encoding="UTF-8"?>
-<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
-
-<plist version="1.0">
-
-<dict>
-
-<key>method</key>
-<string>development</string>
-
-<key>signingStyle</key>
-<string>automatic</string>
-
-</dict>
-
-</plist>
-PLIST
+          printf '%s\n' \
+          '<?xml version="1.0" encoding="UTF-8"?>' \
+          '<plist version="1.0">' \
+          '<dict>' \
+          '<key>method</key>' \
+          '<string>development</string>' \
+          '<key>signingStyle</key>' \
+          '<string>automatic</string>' \
+          '</dict>' \
+          '</plist>' \
+          > "$CM_BUILD_DIR/Build/ios/ExportOptions.plist"
 
 
 
@@ -181,7 +181,6 @@ PLIST
         recipients:
 
           - user@example.com
-
 
         notify:
 
