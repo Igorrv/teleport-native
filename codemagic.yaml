@@ -165,7 +165,13 @@ workflows:
 
 
 
-    artifacts:
+   artifacts:
+   
+      - Unity_v6000.5.2f1.alf
+      
+      - "**/*.alf"
+      
+      - Build/codemagic-unity.log
 
       - Build/ios/ipa/*.ipa
 
