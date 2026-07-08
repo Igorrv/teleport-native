@@ -1,4 +1,5 @@
 workflows:
+
   ios-sideload:
 
     name: Teleport Native - iOS IPA
@@ -24,67 +25,108 @@ workflows:
     cache:
 
       cache_paths:
-        - $HOME/Library/Caches/com.unity3d.UnityEditor
+
         - $CM_BUILD_DIR/Library
+
+        - $HOME/Library/Caches/com.unity3d.UnityEditor
+
+        - $HOME/Library/Application Support/Unity
 
 
     scripts:
 
 
-      - name: Setup Unity
+      - name: Locate Unity
+
         script: |
+
           set -e
 
-          echo "Finding Unity..."
+          echo "Searching Unity..."
 
-          UNITY_BIN=$(find /Applications/Unity -name Unity -type f | head -1)
+          UNITY_BIN=$(find /Applications -path "*Unity.app/Contents/MacOS/Unity" -type f | head -1)
+
 
           if [ -z "$UNITY_BIN" ]; then
-            echo "Unity not found"
+
+            echo "Unity executable not found"
+
             exit 1
+
           fi
+
 
           echo "Unity found:"
           echo "$UNITY_BIN"
+
 
           echo "UNITY_BIN=$UNITY_BIN" >> $CM_ENV
 
 
 
-      - name: Activate Unity License
+
+
+      - name: Unity License Check
+
         script: |
+
           set -e
 
           source $CM_ENV
 
+
           if [ -z "$UNITY_LICENSE" ]; then
 
-            echo "UNITY_LICENSE missing"
-            echo "Generating ALF..."
+
+            echo "No UNITY_LICENSE found"
+
+            echo "Creating ALF file..."
+
 
             "$UNITY_BIN" \
-            -batchmode \
-            -nographics \
-            -quit \
-            -createManualActivationFile \
-            -logFile -
+              -batchmode \
+              -nographics \
+              -quit \
+              -createManualActivationFile \
+              -logFile -
+
+
+            echo ""
+            echo "================================"
+            echo "UPLOAD THE GENERATED .alf FILE"
+            echo "================================"
+
+
+            find "$CM_BUILD_DIR" -name "*.alf"
+
 
             exit 1
 
+
           else
+
 
             echo "Unity license detected"
 
-            mkdir -p ~/.local/share/unity3d/Unity
 
-            echo "$UNITY_LICENSE" > ~/.local/share/unity3d/Unity/Unity_lic.ulf
+            mkdir -p "$HOME/.local/share/unity3d/Unity"
+
+
+            echo "$UNITY_LICENSE" \
+            > "$HOME/.local/share/unity3d/Unity/Unity_lic.ulf"
+
 
           fi
 
 
 
+
+
+
       - name: Unity Export Xcode
+
         script: |
+
           set -e
 
           source $CM_ENV
@@ -103,18 +145,35 @@ workflows:
 
 
 
-      - name: Install CocoaPods
+
+
+
+
+      - name: Install Pods
+
         script: |
+
           set -e
 
-          cd "$CM_BUILD_DIR/Build/Xcode"
 
-          pod install || true
+          if [ -d "$CM_BUILD_DIR/Build/Xcode" ]; then
+
+            cd "$CM_BUILD_DIR/Build/Xcode"
+
+            pod install || true
+
+          fi
 
 
 
-      - name: Build Xcode Archive
+
+
+
+
+      - name: Build iOS Archive
+
         script: |
+
           set -e
 
 
@@ -135,35 +194,68 @@ workflows:
 
 
 
-            - name: Export IPA
+
+
+
+
+      - name: Export IPA
+
         script: |
+
           set -e
+
 
           mkdir -p "$CM_BUILD_DIR/Build/ios/ipa"
 
-          cat > "$CM_BUILD_DIR/Build/ios/ExportOptions.plist" <<EOF
-<?xml version="1.0" encoding="UTF-8"?>
-<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
-<plist version="1.0">
-<dict>
-    <key>method</key>
-    <string>development</string>
 
-    <key>signingStyle</key>
-    <string>automatic</string>
-</dict>
-</plist>
-EOF
+          python3 <<'PY'
+
+          import plistlib
+          import os
+
+
+          path = os.path.join(
+              os.environ["CM_BUILD_DIR"],
+              "Build/ios/ExportOptions.plist"
+          )
+
+
+          options = {
+
+              "method": "development",
+
+              "signingStyle": "automatic"
+
+          }
+
+
+          with open(path, "wb") as f:
+
+              plistlib.dump(options, f)
+
+
+          print("Created:")
+          print(path)
+
+          PY
+
+
 
           xcodebuild \
-            -exportArchive \
-            -archivePath "$CM_BUILD_DIR/Build/ios/TeleportNative.xcarchive" \
-            -exportPath "$CM_BUILD_DIR/Build/ios/ipa" \
-            -exportOptionsPlist "$CM_BUILD_DIR/Build/ios/ExportOptions.plist" \
-            -allowProvisioningUpdates
+          -exportArchive \
+          -archivePath "$CM_BUILD_DIR/Build/ios/TeleportNative.xcarchive" \
+          -exportPath "$CM_BUILD_DIR/Build/ios/ipa" \
+          -exportOptionsPlist "$CM_BUILD_DIR/Build/ios/ExportOptions.plist" \
+          -allowProvisioningUpdates
+
+
+
+
+
 
 
     artifacts:
+
 
       - Build/ios/ipa/*.ipa
 
@@ -173,13 +265,18 @@ EOF
 
 
 
+
+
     publishing:
 
+
       email:
+
 
         recipients:
 
           - user@example.com
+
 
         notify:
 
