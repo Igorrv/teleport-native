@@ -15,82 +15,73 @@ workflows:
 
       vars:
         UNITY_VERSION: "6000.5.2f1"
-        UNITY_CHANGESET: "eb73d3b415a1"
         BUNDLE_ID: "com.teleportnative.app"
 
       xcode: latest
       cocoapods: default
 
+
     cache:
+
       cache_paths:
-        - $HOME/Library/Unity
-        - $HOME/Unity
         - $HOME/Library/Caches/com.unity3d.UnityEditor
         - $CM_BUILD_DIR/Library
+
 
     scripts:
 
 
-      - name: Install Unity Editor
+      - name: Setup Unity
         script: |
           set -e
 
-          UNITY_BIN="$HOME/Unity/Hub/Editor/$UNITY_VERSION/Unity.app/Contents/MacOS/Unity"
+          echo "Finding Unity..."
 
-
-          if [ -f "$UNITY_BIN" ]; then
-            echo "Unity already installed"
-            echo "UNITY_BIN=$UNITY_BIN" >> $CM_ENV
-            exit 0
-          fi
-
-
-          echo "Downloading Unity $UNITY_VERSION"
-
-
-          curl -L \
-          "https://download.unity3d.com/download_unity/$UNITY_CHANGESET/MacEditorInstaller/Unity-$UNITY_VERSION.pkg" \
-          -o /tmp/unity.pkg
-
-
-          echo "Installing Unity"
-
-
-          sudo installer \
-          -pkg /tmp/unity.pkg \
-          -target /
-
-
-          UNITY_BIN=$(find /Applications -path "*Unity.app/Contents/MacOS/Unity" -type f | head -1)
-
+          UNITY_BIN=$(find /Applications/Unity -name Unity -type f | head -1)
 
           if [ -z "$UNITY_BIN" ]; then
-            echo "Unity not found after install"
-            find /Applications -name "*Unity*" || true
+            echo "Unity not found"
             exit 1
           fi
 
-
           echo "Unity found:"
           echo "$UNITY_BIN"
-
 
           echo "UNITY_BIN=$UNITY_BIN" >> $CM_ENV
 
 
 
-      - name: Generate Unity License Request
+      - name: Activate Unity License
         script: |
           set -e
 
-          "$UNITY_BIN" \
-          -batchmode \
-          -nographics \
-          -quit \
-          -createManualActivationFile \
-          -logFile -
+          source $CM_ENV
 
-          ls -la
+          if [ -z "$UNITY_LICENSE" ]; then
+
+            echo "UNITY_LICENSE missing"
+            echo "Generating ALF..."
+
+            "$UNITY_BIN" \
+            -batchmode \
+            -nographics \
+            -quit \
+            -createManualActivationFile \
+            -logFile -
+
+            exit 1
+
+          else
+
+            echo "Unity license detected"
+
+            mkdir -p ~/.local/share/unity3d/Unity
+
+            echo "$UNITY_LICENSE" > ~/.local/share/unity3d/Unity/Unity_lic.ulf
+
+          fi
+
+
 
       - name: Unity Export Xcode
         script: |
@@ -112,7 +103,17 @@ workflows:
 
 
 
-      - name: Build Archive
+      - name: Install CocoaPods
+        script: |
+          set -e
+
+          cd "$CM_BUILD_DIR/Build/Xcode"
+
+          pod install || true
+
+
+
+      - name: Build Xcode Archive
         script: |
           set -e
 
@@ -124,14 +125,13 @@ workflows:
 
 
           xcodebuild \
+          -workspace Unity-iPhone.xcworkspace \
           -scheme Unity-iPhone \
-          -configuration Debug \
+          -configuration Release \
           -destination generic/platform=iOS \
           -archivePath "$CM_BUILD_DIR/Build/ios/TeleportNative.xcarchive" \
           archive \
           -allowProvisioningUpdates
-
-
 
 
 
@@ -140,21 +140,22 @@ workflows:
           set -e
 
 
-          mkdir -p "$CM_BUILD_DIR/Build/ios"
+          mkdir -p "$CM_BUILD_DIR/Build/ios/ipa"
 
 
-          cat > "$CM_BUILD_DIR/Build/ios/ExportOptions.plist" <<EOF
-          <?xml version="1.0" encoding="UTF-8"?>
-          <!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
-          <plist version="1.0">
-          <dict>
-            <key>method</key>
-            <string>development</string>
-            <key>signingStyle</key>
-            <string>automatic</string>
-          </dict>
-          </plist>
-          EOF
+          cat > "$CM_BUILD_DIR/Build/ios/ExportOptions.plist" <<'PLIST'
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<plist version="1.0">
+<dict>
+    <key>method</key>
+    <string>development</string>
+
+    <key>signingStyle</key>
+    <string>automatic</string>
+</dict>
+</plist>
+PLIST
 
 
           xcodebuild \
@@ -166,14 +167,26 @@ workflows:
 
 
 
-   artifacts:
-   
-      - Unity_v6000.5.2f1.alf
-      
-      - "**/*.alf"
-      
-      - Build/codemagic-unity.log
+    artifacts:
 
       - Build/ios/ipa/*.ipa
 
       - Build/codemagic-unity.log
+
+      - "**/*.alf"
+
+
+
+    publishing:
+
+      email:
+
+        recipients:
+
+          - user@example.com
+
+        notify:
+
+          success: true
+
+          failure: true
