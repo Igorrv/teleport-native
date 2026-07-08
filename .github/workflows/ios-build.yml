@@ -1,0 +1,168 @@
+# GitHub Actions — Unity iOS → Xcode → IPA (macOS runner, sem Mac local)
+#
+# Secrets obrigatorias (Settings > Secrets and variables > Actions):
+#   UNITY_LICENSE   — conteudo do arquivo .ulf (Unity Personal)
+#   UNITY_EMAIL     — email conta Unity
+#   UNITY_PASSWORD  — senha conta Unity
+#
+# Secrets opcionais (IPA assinado para device):
+#   APPLE_CERTIFICATE            — certificado .p12 em base64
+#   APPLE_CERTIFICATE_PASSWORD   — senha do .p12
+#   APPLE_PROVISIONING_PROFILE   — profile .mobileprovision em base64
+#   KEYCHAIN_PASSWORD            — senha temporaria do keychain CI
+#
+# Disparo: Actions > iOS Build > Run workflow
+
+name: iOS Build
+
+on:
+  workflow_dispatch:
+    inputs:
+      signed:
+        description: "Gerar IPA assinado (requer secrets Apple)"
+        required: false
+        default: false
+        type: boolean
+
+env:
+  UNITY_VERSION: 6000.5.2f1
+  XCODE_SCHEME: Unity-iPhone
+  IOS_MIN: "15.0"
+
+jobs:
+  build-ios:
+    name: Unity → Xcode → IPA
+    runs-on: macos-latest
+    timeout-minutes: 120
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          lfs: true
+          fetch-depth: 1
+
+      - name: Cache Unity Library
+        uses: actions/cache@v4
+        with:
+          path: Library
+          key: Library-${{ env.UNITY_VERSION }}-${{ hashFiles('Assets/**', 'Packages/**', 'ProjectSettings/**') }}
+          restore-keys: |
+            Library-${{ env.UNITY_VERSION }}-
+
+      - name: Unity — export Xcode (game-ci)
+        uses: game-ci/unity-builder@v4
+        env:
+          UNITY_LICENSE: ${{ secrets.UNITY_LICENSE }}
+          UNITY_EMAIL: ${{ secrets.UNITY_EMAIL }}
+          UNITY_PASSWORD: ${{ secrets.UNITY_PASSWORD }}
+        with:
+          unityVersion: ${{ env.UNITY_VERSION }}
+          targetPlatform: iOS
+          iosVersion: ${{ env.IOS_MIN }}
+          projectPath: .
+          buildMethod: TeleportNative.Editor.BuildiOS.Build
+          allowDirtyBuild: true
+          versioning: None
+
+      - name: Verificar export Xcode
+        run: |
+          test -d ios/Unity-iPhone.xcodeproj || {
+            echo "::error::Export falhou — ios/Unity-iPhone.xcodeproj ausente"
+            exit 1
+          }
+          ls -la ios/
+
+      - name: CocoaPods
+        run: |
+          cd ios
+          pod install --repo-update
+
+      # --- Fase 1: IPA unsigned (Sideloadly assina no Windows) ---
+      - name: Build unsigned .app
+        if: ${{ inputs.signed != true }}
+        run: |
+          set -e
+          cd ios
+          xcodebuild \
+            -workspace Unity-iPhone.xcworkspace \
+            -scheme "${{ env.XCODE_SCHEME }}" \
+            -configuration Release \
+            -destination 'generic/platform=iOS' \
+            -derivedDataPath "$GITHUB_WORKSPACE/build/DerivedData" \
+            build \
+            CODE_SIGNING_ALLOWED=NO \
+            CODE_SIGNING_REQUIRED=NO \
+            CODE_SIGN_IDENTITY="" \
+            DEVELOPMENT_TEAM=""
+
+          APP=$(find "$GITHUB_WORKSPACE/build/DerivedData/Build/Products" -name "*.app" -type d | head -1)
+          test -n "$APP" || { echo "::error::.app nao encontrado"; find "$GITHUB_WORKSPACE/build" -name "*.app"; exit 1; }
+          mkdir -p "$GITHUB_WORKSPACE/build/ios/Payload"
+          cp -R "$APP" "$GITHUB_WORKSPACE/build/ios/Payload/"
+          cd "$GITHUB_WORKSPACE/build/ios"
+          zip -qr TeleportNative-unsigned.ipa Payload
+          rm -rf Payload
+          ls -la TeleportNative-unsigned.ipa
+
+      - name: Instalar certificado Apple (fase 2 — assinado)
+        if: ${{ inputs.signed == true }}
+        uses: apple-actions/import-codesign-certs@v3
+        with:
+          p12-file-base64: ${{ secrets.APPLE_CERTIFICATE }}
+          p12-password: ${{ secrets.APPLE_CERTIFICATE_PASSWORD }}
+
+      - name: Instalar provisioning profile (fase 2)
+        if: ${{ inputs.signed == true }}
+        run: |
+          PP_PATH="$HOME/Library/MobileDevice/Provisioning Profiles"
+          mkdir -p "$PP_PATH"
+          echo "${{ secrets.APPLE_PROVISIONING_PROFILE }}" | base64 --decode > "$PP_PATH/profile.mobileprovision"
+
+      - name: Build IPA assinado
+        if: ${{ inputs.signed == true }}
+        run: |
+          set -e
+          cd ios
+          xcodebuild -allowProvisioningUpdates \
+            -workspace Unity-iPhone.xcworkspace \
+            -scheme "${{ env.XCODE_SCHEME }}" \
+            -configuration Release \
+            -destination 'generic/platform=iOS' \
+            -archivePath "$GITHUB_WORKSPACE/build/ios/TeleportNative.xcarchive" \
+            archive
+          mkdir -p "$GITHUB_WORKSPACE/build/ios/ipa"
+          xcodebuild -exportArchive \
+            -archivePath "$GITHUB_WORKSPACE/build/ios/TeleportNative.xcarchive" \
+            -exportPath "$GITHUB_WORKSPACE/build/ios/ipa" \
+            -exportOptionsPlist ExportOptions.plist \
+            -allowProvisioningUpdates
+
+      - name: Upload IPA unsigned
+        if: ${{ inputs.signed != true }}
+        uses: actions/upload-artifact@v4
+        with:
+          name: teleport-native-unsigned-ipa
+          path: build/ios/TeleportNative-unsigned.ipa
+          retention-days: 14
+          if-no-files-found: error
+
+      - name: Upload IPA assinado
+        if: ${{ inputs.signed == true }}
+        uses: actions/upload-artifact@v4
+        with:
+          name: teleport-native-signed-ipa
+          path: build/ios/ipa/*.ipa
+          retention-days: 14
+          if-no-files-found: error
+
+      - name: Upload logs (fallback)
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: ios-build-logs
+          path: |
+            build/DerivedData/Logs/**
+            Build/unity-export.log
+          if-no-files-found: ignore
+          retention-days: 7
