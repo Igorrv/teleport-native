@@ -1,5 +1,6 @@
-# Codemagic — iOS IPA (Sideloadly)
-# Group "unity_credentials": UNITY_LICENSE (.ulf) OU UNITY_SERIAL+EMAIL+PASSWORD
+# Codemagic — iOS IPA
+# Personal (GRATIS): so UNITY_LICENSE (.ulf) — SEM serial/key
+# Obter .ulf: .\scripts\setup-unity-license.ps1
 
 workflows:
   ios-sideload:
@@ -41,20 +42,17 @@ workflows:
           echo "UNITY_HOME=$TARGET" >> "$CM_ENV"
           echo "UNITY_BIN=$TARGET/Contents/MacOS/Unity" >> "$CM_ENV"
 
-      - name: Ativar licenca Unity
+      - name: Ativar licenca Unity (Personal .ulf)
         script: |
           set -e
           source "$CM_ENV"
           mkdir -p "$HOME/.local/share/unity3d/Unity"
-          if [ -n "$UNITY_LICENSE" ]; then
-            echo "$UNITY_LICENSE" > "$HOME/.local/share/unity3d/Unity/Unity_lic.ulf"
-          elif [ -n "$UNITY_SERIAL" ]; then
-            "$UNITY_BIN" -batchmode -nographics -quit -logFile \
-              -serial "$UNITY_SERIAL" -username "${UNITY_EMAIL?}" -password "${UNITY_PASSWORD?}"
-          else
-            echo "Configure UNITY_LICENSE ou UNITY_SERIAL+UNITY_EMAIL+UNITY_PASSWORD"
+          if [ -z "$UNITY_LICENSE" ]; then
+            echo "Cole o conteudo do .ulf em UNITY_LICENSE (rode setup-unity-license.ps1 no Windows)"
+            echo "Conta Personal NAO usa serial/key."
             exit 1
           fi
+          echo "$UNITY_LICENSE" > "$HOME/.local/share/unity3d/Unity/Unity_lic.ulf"
 
       - name: Export Xcode (Unity)
         script: |
@@ -134,12 +132,11 @@ workflows:
           fi
           export UNITY_BIN="$TARGET/Contents/MacOS/Unity"
           mkdir -p "$HOME/.local/share/unity3d/Unity"
-          if [ -n "$UNITY_LICENSE" ]; then
-            echo "$UNITY_LICENSE" > "$HOME/.local/share/unity3d/Unity/Unity_lic.ulf"
-          else
-            "$UNITY_BIN" -batchmode -nographics -quit \
-              -serial "${UNITY_SERIAL?}" -username "${UNITY_EMAIL?}" -password "${UNITY_PASSWORD?}"
+          if [ -z "$UNITY_LICENSE" ]; then
+            echo "Configure UNITY_LICENSE (.ulf) — veja scripts/setup-unity-license.ps1"
+            exit 1
           fi
+          echo "$UNITY_LICENSE" > "$HOME/.local/share/unity3d/Unity/Unity_lic.ulf"
           "$UNITY_BIN" -batchmode -nographics -quit \
             -projectPath "$CM_BUILD_DIR" \
             -executeMethod TeleportNative.Editor.IosCiMenu.PrepareForIosExport \
