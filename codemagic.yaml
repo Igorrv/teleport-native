@@ -1,103 +1,131 @@
 workflows:
   ios-sideload:
+
     name: Teleport Native - iOS IPA
 
     max_build_duration: 120
 
     instance_type: mac_mini_m2
 
+
     environment:
+
+      groups:
+        - codemagic
 
       vars:
         UNITY_VERSION: "6000.5.2f1"
         BUNDLE_ID: "com.teleportnative.app"
-
-      groups:
-        - codemagic
 
       xcode: latest
       cocoapods: default
 
 
     cache:
+
       cache_paths:
         - $CM_BUILD_DIR/Library
 
 
+
     scripts:
 
-      # -----------------------------------------
-      # Verifica ambiente
-      # -----------------------------------------
 
-      - name: Check environment
+      # =====================================
+      # Verifica ambiente
+      # =====================================
+
+      - name: Environment check
+
         script: |
+
           set -e
 
           echo "=============================="
           echo "Teleport Native Build"
           echo "=============================="
 
-          echo "Build directory:"
-          echo $CM_BUILD_DIR
+          echo "Project:"
+          echo "$CM_BUILD_DIR"
 
           echo "Unity version:"
-          echo $UNITY_VERSION
+          echo "$UNITY_VERSION"
 
-          echo "Machine:"
-          uname -a
+          echo ""
 
-          echo "Applications:"
-          ls /Applications || true
+          ls -la /Applications
 
 
 
-      # -----------------------------------------
-      # Localiza Unity
-      # -----------------------------------------
+      # =====================================
+      # Encontrar Unity
+      # =====================================
 
-      - name: Find Unity
+      - name: Locate Unity
+
         script: |
+
           set -e
 
 
-          echo "Searching Unity..."
-
-          UNITY_APP=$(find /Applications \
-          -maxdepth 5 \
-          -name "Unity.app" \
-          | head -1)
+          echo "Looking for Unity executable..."
 
 
-          if [ -z "$UNITY_APP" ]; then
+          if [ -f "/Applications/Unity/Unity.app/Contents/MacOS/Unity" ]; then
 
-            echo "ERROR:"
-            echo "Unity was not found."
+              UNITY_BIN="/Applications/Unity/Unity.app/Contents/MacOS/Unity"
 
-            echo ""
-            echo "Installed applications:"
-            ls /Applications
+          elif [ -f "/Applications/Unity.app/Contents/MacOS/Unity" ]; then
 
-            exit 1
+              UNITY_BIN="/Applications/Unity.app/Contents/MacOS/Unity"
+
+          else
+
+              UNITY_BIN=$(find /Applications \
+              -name Unity \
+              -type f \
+              | head -1)
 
           fi
 
 
+
+          if [ -z "$UNITY_BIN" ]; then
+
+              echo "Unity executable not found"
+
+              find /Applications -name "*Unity*" || true
+
+              exit 1
+
+          fi
+
+
+
           echo "Unity found:"
-          echo "$UNITY_APP"
-
-
-          echo "UNITY_APP=$UNITY_APP" >> $CM_ENV
+          echo "$UNITY_BIN"
 
 
 
-      # -----------------------------------------
-      # Export Unity para Xcode
-      # -----------------------------------------
+          "$UNITY_BIN" \
+          -version
+
+
+
+          echo "UNITY_BIN=$UNITY_BIN" >> $CM_ENV
+
+
+
+      # =====================================
+      # Exportar Unity para Xcode
+      # =====================================
 
       - name: Unity export Xcode
+
         script: |
+
           set -e
+
 
           source $CM_ENV
 
@@ -105,14 +133,13 @@ workflows:
           mkdir -p "$CM_BUILD_DIR/Build"
 
 
-          UNITY="$UNITY_APP/Contents/MacOS/Unity"
+
+          echo "Running Unity:"
+          echo "$UNITY_BIN"
 
 
-          echo "Running:"
-          echo "$UNITY"
 
-
-          "$UNITY" \
+          "$UNITY_BIN" \
           -batchmode \
           -nographics \
           -quit \
@@ -122,11 +149,12 @@ workflows:
 
 
 
-      # -----------------------------------------
-      # Build Xcode Archive
-      # -----------------------------------------
+      # =====================================
+      # Compilar projeto Xcode
+      # =====================================
 
-      - name: Build iOS Archive
+      - name: Build Xcode Archive
+
         script: |
 
           set -e
@@ -135,7 +163,9 @@ workflows:
           cd "$CM_BUILD_DIR/Build/Xcode"
 
 
+
           mkdir -p "$CM_BUILD_DIR/Build/ios"
+
 
 
           xcodebuild \
@@ -148,31 +178,45 @@ workflows:
 
 
 
-      # -----------------------------------------
-      # Export IPA
-      # -----------------------------------------
+      # =====================================
+      # Gerar IPA
+      # =====================================
 
       - name: Export IPA
+
         script: |
 
           set -e
 
 
+
           cat > "$CM_BUILD_DIR/Build/ios/ExportOptions.plist" <<EOF
-          <?xml version="1.0" encoding="UTF-8"?>
-          <!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
-          <plist version="1.0">
-          <dict>
 
-            <key>method</key>
-            <string>development</string>
+<?xml version="1.0" encoding="UTF-8"?>
 
-            <key>signingStyle</key>
-            <string>automatic</string>
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN"
+"http://www.apple.com/DTDs/PropertyList-1.0.dtd">
 
-          </dict>
-          </plist>
-          EOF
+<plist version="1.0">
+
+<dict>
+
+
+<key>method</key>
+
+<string>development</string>
+
+
+<key>signingStyle</key>
+
+<string>automatic</string>
+
+
+</dict>
+
+</plist>
+
+EOF
 
 
 
@@ -182,6 +226,7 @@ workflows:
           -exportPath "$CM_BUILD_DIR/Build/ios/ipa" \
           -exportOptionsPlist "$CM_BUILD_DIR/Build/ios/ExportOptions.plist" \
           -allowProvisioningUpdates
+
 
 
 
@@ -200,6 +245,7 @@ workflows:
         recipients:
 
           - user@example.com
+
 
         notify:
 
