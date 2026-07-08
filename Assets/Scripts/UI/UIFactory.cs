@@ -188,6 +188,49 @@ namespace TeleportNative.UI
             return rt;
         }
 
+        /// <summary>Campo de texto (uGUI InputField) arredondado, consistente com o tema premium.</summary>
+        public static InputField TextField(Transform parent, string placeholder)
+        {
+            var go = new GameObject("input", typeof(RectTransform), typeof(Image), typeof(InputField));
+            var rt = (RectTransform)go.transform;
+            rt.SetParent(parent, false);
+            rt.sizeDelta = new Vector2(0, T.ButtonHeight);
+            var img = go.GetComponent<UnityEngine.UI.Image>();
+            img.sprite = RoundedSprite(Mathf.RoundToInt(T.RadiusS));
+            img.type = UnityEngine.UI.Image.Type.Sliced;
+            img.color = T.SurfaceRaised;
+
+            var ph = TextFieldChild(rt, placeholder, T.TextMuted);
+            var content = TextFieldChild(rt, string.Empty, T.Text);
+            var inf = go.GetComponent<InputField>();
+            inf.textComponent = content;
+            inf.placeholder = ph;
+            inf.text = string.Empty;
+            inf.caretColor = T.Text;
+
+            var le = go.AddComponent<LayoutElement>();
+            le.preferredHeight = T.ButtonHeight;
+            return inf;
+        }
+
+        private static Text TextFieldChild(RectTransform parent, string text, Color color)
+        {
+            var go = new GameObject(string.IsNullOrEmpty(text) ? "text" : "ph", typeof(Text));
+            var rt = (RectTransform)go.transform;
+            rt.SetParent(parent, false);
+            Stretch(rt);
+            rt.offsetMin = new Vector2(T.SpaceM, 8);
+            rt.offsetMax = new Vector2(-T.SpaceM, -8);
+            var t = go.GetComponent<Text>();
+            t.font = DefaultFont();
+            t.fontSize = Mathf.RoundToInt(T.BodySize);
+            t.color = color;
+            t.alignment = TextAnchor.MiddleLeft;
+            t.horizontalOverflow = HorizontalWrapMode.Overflow;
+            t.supportRichText = false;
+            return t;
+        }
+
         public static RectTransform Spacer(Transform parent, float height)
         {
             var go = new GameObject("spacer", typeof(RectTransform));

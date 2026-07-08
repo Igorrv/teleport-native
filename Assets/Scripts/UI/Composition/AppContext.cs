@@ -43,6 +43,7 @@ namespace TeleportNative.UI
         public IReadOnlyList<CapturedFrame> LastCapture;
         public string PendingName;
         public CoreSpace CurrentSpace;
+        public RealtyDraft RealtyDraft; // imovel "em construcao" (fluxo de corretores)
 
         public AppContext(
             IAppLogger log, IRuntimeConfig config, IHaptics haptics,

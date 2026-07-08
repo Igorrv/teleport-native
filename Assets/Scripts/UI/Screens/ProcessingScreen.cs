@@ -9,12 +9,9 @@ using TeleportNative.Network;
 
 namespace TeleportNative.UI
 {
-    /// <summary>
-    /// Tela de processamento: dispara ReconstructionClient.RunAsync, mostra progresso
-    /// (ENVIADO -> PROCESSANDO -> GERANDO_3D -> FINALIZADO) com retry/cancel. Vai ao Viewer ao pronto.
-    /// </summary>
     public sealed class ProcessingScreen : AppScreen
     {
+        private Text _title;
         private Text _status;
         private ProgressBarView _bar;
         private Text _pct;
@@ -27,15 +24,22 @@ namespace TeleportNative.UI
             UIFactory.Panel(Root, "bg", T.Background);
             var c = UIFactory.ScreenLayout(Root, "col", TextAnchor.MiddleCenter, T.SpaceM, T.SpaceXL);
 
-            UIFactory.Text(c, "Reconstruindo seu espaco", T.HeadingSize, T.Text, TextAnchor.MiddleCenter);
-            UIFactory.Spacer(c, T.SpaceS);
-            _status = UIFactory.Text(c, "Enviando fotos...", T.BodySize, T.TextMuted, TextAnchor.MiddleCenter);
-            UIFactory.Spacer(c, T.SpaceM);
-            _bar = ProgressBarView.Create(c);
-            UIFactory.Spacer(c, T.SpaceS);
-            _pct = UIFactory.Text(c, "0%", T.CaptionSize, T.TextMuted, TextAnchor.MiddleCenter);
-            UIFactory.Spacer(c, T.SpaceL);
-            UIFactory.Text(c, "Isso pode levar alguns minutos. Voce pode minimizar o app.",
+            var card = UIFactory.Card(c, "card", T.Surface, T.RadiusL, elevation: true);
+            card.sizeDelta = new Vector2(0, 280);
+            var inner = UIFactory.Column(card, "inner", T.SpaceM, T.SpaceM);
+            UIFactory.Stretch(inner);
+            inner.offsetMin = new Vector2(T.SpaceL, T.SpaceL);
+            inner.offsetMax = new Vector2(-T.SpaceL, -T.SpaceL);
+
+            _title = UIFactory.Text(inner, "Reconstruindo ambiente", T.HeadingSize, T.Text, TextAnchor.MiddleCenter);
+            UIFactory.Spacer(inner, T.SpaceS);
+            _status = UIFactory.Text(inner, "Enviando fotos...", T.BodySize, T.TextMuted, TextAnchor.MiddleCenter);
+            UIFactory.Spacer(inner, T.SpaceM);
+            _bar = ProgressBarView.Create(inner);
+            UIFactory.Spacer(inner, T.SpaceS);
+            _pct = UIFactory.Text(inner, "0%", T.CaptionSize, T.Accent, TextAnchor.MiddleCenter);
+            UIFactory.Spacer(inner, T.SpaceM);
+            UIFactory.Text(inner, "Isso pode levar alguns minutos. Voce pode minimizar o app.",
                 T.CaptionSize, T.TextMuted, TextAnchor.MiddleCenter, true);
 
             _error = UIFactory.Text(c, "", T.BodySize, T.Danger, TextAnchor.MiddleCenter, true);
@@ -50,6 +54,8 @@ namespace TeleportNative.UI
             _cts?.Cancel();
             _cts = new CancellationTokenSource();
             HideError();
+            if (_title != null)
+                _title.text = string.IsNullOrEmpty(Ctx.PendingName) ? "Reconstruindo ambiente" : Ctx.PendingName;
             _status.text = "Enviando fotos...";
             _bar.Value = 0; _pct.text = "0%";
 
@@ -65,10 +71,21 @@ namespace TeleportNative.UI
             try
             {
                 var res = await Ctx.Reconstruction.RunAsync(req, Ctx.PendingName, progress, _cts.Token);
-                if (res.IsSuccess) { Ctx.CurrentSpace = res.Value; Ctx.Flow.Request(ScreenId.Viewer); }
+                if (res.IsSuccess)
+                {
+                    Ctx.CurrentSpace = res.Value;
+                    var draft = Ctx.RealtyDraft;
+                    if (draft != null)
+                    {
+                        draft.Advance();
+                        if (!draft.HasNext) Ctx.RealtyDraft = null;
+                    }
+                    Ctx.Haptics.Trigger(HapticType.Success);
+                    Ctx.Flow.Request(ScreenId.Viewer);
+                }
                 else ShowError(res.Error);
             }
-            catch (OperationCanceledException) { /* tela trocada */ }
+            catch (OperationCanceledException) { }
             catch (Exception e) { ShowError(e.Message); }
         }
 
@@ -86,6 +103,7 @@ namespace TeleportNative.UI
             _error.text = "Nao foi possivel concluir: " + msg;
             _error.gameObject.SetActive(true);
             _actions.gameObject.SetActive(true);
+            Ctx.Haptics.Trigger(HapticType.Error);
         }
 
         private void HideError()

@@ -1,4 +1,4 @@
-using System.IO;
+﻿using System.IO;
 using UnityEditor;
 using UnityEditor.Build;
 using UnityEditor.Build.Reporting;
@@ -98,7 +98,9 @@ namespace TeleportNative.Editor
 
             try { PlayerSettings.iOS.targetOSVersionString = "15.0"; } catch { /* API antiga */ }
 
+#if UNITY_EDITOR_OSX
             EditorUserBuildSettings.iOSXcodeBuildConfig = XcodeBuildConfig.Release;
+#endif
             EditorUserBuildSettings.symlinkSources = false;
 
             Debug.Log("[Teleport] iOS: IL2CPP, ARM64, min 15.0, Release, bundle=" + BundleId);
@@ -129,7 +131,7 @@ namespace TeleportNative.Editor
             {
                 var text = File.ReadAllText(podfile);
                 if (!text.Contains("15.0"))
-                    File.WriteAllText(podfile, PodfileTemplate + "\n# Unity Podfile original substituido — ajuste se necessario.\n");
+                    File.WriteAllText(podfile, PodfileTemplate + "\n# Unity Podfile original substituido â€” ajuste se necessario.\n");
             }
 
             var exportPath = Path.Combine(iosRoot, "ExportOptions.plist");

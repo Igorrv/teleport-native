@@ -86,7 +86,7 @@ namespace TeleportNative.UI
             UIFactory.Stretch(sheetCol);
 
             _status = UIFactory.Text(sheetCol, "Pronto para capturar", T.CaptionSize, T.Success, TextAnchor.MiddleCenter, fit: false);
-            _hint = UIFactory.Text(sheetCol, CaptureFlowLogic.Hint(true, false, 0, 0), T.BodySize, T.TextMuted, TextAnchor.MiddleCenter, wrap: true, fit: false);
+            _hint = UIFactory.Text(sheetCol, CaptureFlowLogic.Hint(true, false, 0, 0, null), T.BodySize, T.TextMuted, TextAnchor.MiddleCenter, wrap: true, fit: false);
 
             var btn = UIFactory.Button(sheetCol, "Iniciar captura", OnAction, true);
             btn.sizeDelta = new Vector2(0, T.ButtonHeight);
@@ -158,6 +158,7 @@ namespace TeleportNative.UI
             _armed = false;
             _coverage01 = 0f;
             _keyframes = 0;
+            ApplyRoomHeader();
             RefreshUi();
 
             var hasAr = Ctx.Capture != null;
@@ -226,7 +227,7 @@ namespace TeleportNative.UI
                 _recDot.transform.parent.gameObject.SetActive(false);
                 _keyframes = frames.Count;
 
-                var block = CaptureFlowLogic.FinishBlockReason(frames.Count, _coverage01);
+                var block = CaptureFlowLogic.FinishBlockReason(frames.Count, _coverage01, ActiveRoom());
                 if (block != null)
                 {
                     _toast.Show(block, T.Warning, 4f);
@@ -260,14 +261,43 @@ namespace TeleportNative.UI
             RefreshUi();
         }
 
+        private void ApplyRoomHeader()
+        {
+            var header = Root.Find("header");
+            if (header == null) return;
+            var texts = header.GetComponentsInChildren<Text>(true);
+            if (texts.Length < 2) return;
+
+            var d = Ctx.RealtyDraft;
+            if (d != null && d.HasNext)
+            {
+                var info = RoomCatalog.Of(d.NextType);
+                texts[0].text = info.Label;
+                texts[1].text = $"{d.Done + 1}/{d.Total} · {d.Title} — gire 360°";
+            }
+            else
+            {
+                texts[0].text = "Captura AR";
+                texts[1].text = "Aponte e gire 360°";
+            }
+        }
+
+        private RoomType? ActiveRoom()
+        {
+            var d = Ctx.RealtyDraft;
+            return d != null && d.HasNext ? d.NextType : (RoomType?)null;
+        }
+
         private void RefreshUi()
         {
+            var room = ActiveRoom();
+            int minPhotos = CaptureFlowLogic.EffectiveMinKeyframes(room);
             if (_coverage != null)
                 _coverage.text = Mathf.RoundToInt(_coverage01 * 100f) + "%";
             if (_count != null)
-                _count.text = $"{_keyframes} fotos · meta {CaptureFlowLogic.MinKeyframes}+";
+                _count.text = $"{_keyframes} fotos · meta {minPhotos}+";
             if (_hint != null && _cameraOk)
-                _hint.text = CaptureFlowLogic.Hint(Ctx.Capture != null, _armed, _keyframes, _coverage01);
+                _hint.text = CaptureFlowLogic.Hint(Ctx.Capture != null, _armed, _keyframes, _coverage01, room);
             if (_actionLabel != null)
             {
                 _actionLabel.text = _armed ? "Finalizar captura" : "Iniciar captura";
@@ -278,11 +308,11 @@ namespace TeleportNative.UI
 
             if (!_armed)
                 _status.text = "Pronto para capturar";
-            else if (CaptureFlowLogic.CanFinish(_keyframes, _coverage01))
+            else if (CaptureFlowLogic.CanFinish(_keyframes, _coverage01, room))
                 _status.text = "Pode finalizar";
             else
                 _status.text = "Capturando...";
-            _status.color = CaptureFlowLogic.CanFinish(_keyframes, _coverage01) ? T.Success : T.Warning;
+            _status.color = CaptureFlowLogic.CanFinish(_keyframes, _coverage01, room) ? T.Success : T.Warning;
         }
 
         private void OnDestroy()

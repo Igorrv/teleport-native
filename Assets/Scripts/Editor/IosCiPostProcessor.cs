@@ -1,3 +1,4 @@
+#if UNITY_EDITOR_OSX
 using System;
 using System.IO;
 using UnityEditor;
@@ -11,6 +12,7 @@ namespace TeleportNative.Editor
     /// <summary>
     /// Aplica Team ID e assinatura manual no projeto Xcode exportado (CI GitHub Actions).
     /// Variaveis de ambiente: APPLE_TEAM_ID, APPLE_SIGNING_IDENTITY, APPLE_PROVISIONING_PROFILE_UUID
+    /// Compilado so em macOS (UnityEditor.iOS.Xcode nao existe no Windows sem modulo iOS).
     /// </summary>
     public sealed class IosCiPostProcessor : IPostprocessBuildWithReport
     {
@@ -106,3 +108,4 @@ namespace TeleportNative.Editor
         }
     }
 }
+#endif
