@@ -1,349 +1,150 @@
+# Codemagic — iOS IPA (Sideloadly)
+# Group "unity_credentials": UNITY_LICENSE (.ulf) OU UNITY_SERIAL+EMAIL+PASSWORD
+
 workflows:
-
   ios-sideload:
-
     name: Teleport Native - iOS IPA
-
     max_build_duration: 120
-
     instance_type: mac_mini_m2
-
-
     environment:
-
       groups:
-        - codemagic
-
-
+        - unity_credentials
+      ios_signing:
+        distribution_type: development
+        bundle_identifier: com.teleportnative.app
       vars:
-
         UNITY_VERSION: "6000.5.2f1"
-
         UNITY_CHANGESET: "eb73d3b415a1"
-
         BUNDLE_ID: "com.teleportnative.app"
-
-
+        UNITY_IOS_DIR: Build/Xcode
+        XCODE_PROJECT: Unity-iPhone.xcodeproj
+        XCODE_SCHEME: Unity-iPhone
       xcode: latest
-
       cocoapods: default
-
-
-
     cache:
-
       cache_paths:
-
         - /Applications/Unity
-
         - $CM_BUILD_DIR/Library
-
         - $HOME/Library/Caches/com.unity3d.UnityEditor
-
         - $HOME/.local/share/unity3d
-
-
-
     scripts:
-
-
-
-      - name: Install Unity Editor
-
+      - name: Instalar Unity 6.5.2f1
         script: |
-
           set -e
-
-
-          UNITY_PATH="/Applications/Unity/Unity-$UNITY_VERSION/Unity.app/Contents/MacOS/Unity"
-
-
-
-          echo "Checking Unity..."
-
-
-
-          if [ -f "$UNITY_PATH" ]; then
-
-
-              echo "Unity already installed"
-
-          else
-
-
-              echo "Installing Unity $UNITY_VERSION"
-
-
-
-              curl -L \
-              "https://download.unity3d.com/download_unity/$UNITY_CHANGESET/MacEditorInstaller/Unity-$UNITY_VERSION.pkg" \
-              -o /tmp/unity.pkg
-
-
-
-              sudo installer \
-              -pkg /tmp/unity.pkg \
-              -target /
-
-
-
+          TARGET="/Applications/Unity/Hub/Editor/${UNITY_VERSION}/Unity.app"
+          if [ ! -d "$TARGET" ]; then
+            yes Y | /Applications/Unity\ Hub.app/Contents/MacOS/Unity\ Hub -- --headless install \
+              --version "$UNITY_VERSION" --changeset "$UNITY_CHANGESET" -a arm64
+            yes Y | /Applications/Unity\ Hub.app/Contents/MacOS/Unity\ Hub -- --headless install-modules \
+              --version "$UNITY_VERSION" -m ios -a arm64
           fi
+          echo "UNITY_HOME=$TARGET" >> "$CM_ENV"
+          echo "UNITY_BIN=$TARGET/Contents/MacOS/Unity" >> "$CM_ENV"
 
-
-
-          if [ ! -f "$UNITY_PATH" ]; then
-
-              echo "Unity executable missing after installation"
-
-              find /Applications -name Unity -type f
-
-              exit 1
-
-          fi
-
-
-
-          echo "Unity found:"
-
-          echo "$UNITY_PATH"
-
-
-
-          echo "UNITY_BIN=$UNITY_PATH" >> $CM_ENV
-
-
-
-
-
-      - name: Unity License
-
+      - name: Ativar licenca Unity
         script: |
-
           set -e
-
-
-          source $CM_ENV
-
-
-
+          source "$CM_ENV"
           mkdir -p "$HOME/.local/share/unity3d/Unity"
-
-
-
           if [ -n "$UNITY_LICENSE" ]; then
-
-
-              echo "Using UNITY_LICENSE"
-
-
-
-              echo "$UNITY_LICENSE" \
-              > "$HOME/.local/share/unity3d/Unity/Unity_lic.ulf"
-
-
-
+            echo "$UNITY_LICENSE" > "$HOME/.local/share/unity3d/Unity/Unity_lic.ulf"
+          elif [ -n "$UNITY_SERIAL" ]; then
+            "$UNITY_BIN" -batchmode -nographics -quit -logFile \
+              -serial "$UNITY_SERIAL" -username "${UNITY_EMAIL?}" -password "${UNITY_PASSWORD?}"
           else
-
-
-              echo "UNITY_LICENSE not found"
-
-
-
-              echo "Generating ALF"
-
-
-
-              "$UNITY_BIN" \
-              -batchmode \
-              -nographics \
-              -quit \
-              -createManualActivationFile \
-              -logFile -
-
-
-
-              echo "Generated files:"
-
-
-
-              find "$CM_BUILD_DIR" -name "*.alf"
-
-
-
-              exit 1
-
-
-
+            echo "Configure UNITY_LICENSE ou UNITY_SERIAL+UNITY_EMAIL+UNITY_PASSWORD"
+            exit 1
           fi
 
-
-
-
-
-      - name: Unity Export Xcode
-
+      - name: Export Xcode (Unity)
         script: |
-
           set -e
-
-
-          source $CM_ENV
-
-
-
+          source "$CM_ENV"
           mkdir -p "$CM_BUILD_DIR/Build"
+          "$UNITY_BIN" -batchmode -nographics -quit \
+            -projectPath "$CM_BUILD_DIR" \
+            -executeMethod TeleportNative.Editor.IosCiMenu.PrepareForIosExport \
+            -logFile "$CM_BUILD_DIR/Build/codemagic-unity.log"
+          test -d "$CM_BUILD_DIR/$UNITY_IOS_DIR/$XCODE_PROJECT" || exit 1
 
-
-
-          "$UNITY_BIN" \
-          -batchmode \
-          -nographics \
-          -quit \
-          -projectPath "$CM_BUILD_DIR" \
-          -executeMethod TeleportNative.Editor.IosCiMenu.PrepareForIosExport \
-          -logFile "$CM_BUILD_DIR/Build/codemagic-unity.log"
-
-
-
-
-
-      - name: Install CocoaPods
-
+      - name: CocoaPods + assinatura
         script: |
-
           set -e
-
-
-          cd "$CM_BUILD_DIR/Build/Xcode"
-
-
+          cd "$CM_BUILD_DIR/$UNITY_IOS_DIR"
           pod install || true
+          xcode-project use-profiles || true
 
-
-
-
-
-      - name: Build Xcode Archive
-
+      - name: Archive + IPA
         script: |
-
           set -e
-
-
-          cd "$CM_BUILD_DIR/Build/Xcode"
-
-
-
+          cd "$CM_BUILD_DIR/$UNITY_IOS_DIR"
           mkdir -p "$CM_BUILD_DIR/Build/ios"
+          if [ -d Unity-iPhone.xcworkspace ]; then
+            xcodebuild -allowProvisioningUpdates -workspace Unity-iPhone.xcworkspace \
+              -scheme "$XCODE_SCHEME" -configuration Release -destination 'generic/platform=iOS' \
+              -archivePath "$CM_BUILD_DIR/Build/ios/TeleportNative.xcarchive" archive
+          else
+            xcodebuild -allowProvisioningUpdates -project "$XCODE_PROJECT" -scheme "$XCODE_SCHEME" \
+              -configuration Release -destination 'generic/platform=iOS' \
+              -archivePath "$CM_BUILD_DIR/Build/ios/TeleportNative.xcarchive" archive
+          fi
+          cat > "$CM_BUILD_DIR/Build/ios/ExportOptions.plist" <<'PLIST'
+          <?xml version="1.0" encoding="UTF-8"?>
+          <!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+          <plist version="1.0"><dict>
+            <key>method</key><string>development</string>
+            <key>signingStyle</key><string>automatic</string>
+          </dict></plist>
+          PLIST
+          xcodebuild -exportArchive \
+            -archivePath "$CM_BUILD_DIR/Build/ios/TeleportNative.xcarchive" \
+            -exportPath "$CM_BUILD_DIR/Build/ios/ipa" \
+            -exportOptionsPlist "$CM_BUILD_DIR/Build/ios/ExportOptions.plist" \
+            -allowProvisioningUpdates
 
-
-
-          xcodebuild \
-
-          -workspace Unity-iPhone.xcworkspace \
-
-          -scheme Unity-iPhone \
-
-          -configuration Release \
-
-          -destination generic/platform=iOS \
-
-          -archivePath "$CM_BUILD_DIR/Build/ios/TeleportNative.xcarchive" \
-
-          archive \
-
-          -allowProvisioningUpdates
-
-
-
-
-
-      - name: Export IPA
-
+      - name: Devolver licenca Unity
         script: |
-
-          set -e
-
-
-
-          mkdir -p "$CM_BUILD_DIR/Build/ios/ipa"
-
-
-
-          python3 <<'PY'
-
-          import plistlib
-          import os
-
-
-          path = os.path.join(
-              os.environ["CM_BUILD_DIR"],
-              "Build/ios/ExportOptions.plist"
-          )
-
-
-          data = {
-
-              "method": "development",
-
-              "signingStyle": "automatic"
-
-          }
-
-
-          with open(path, "wb") as f:
-
-              plistlib.dump(data, f)
-
-
-          print("ExportOptions created")
-
-          PY
-
-
-
-          xcodebuild \
-
-          -exportArchive \
-
-          -archivePath "$CM_BUILD_DIR/Build/ios/TeleportNative.xcarchive" \
-
-          -exportPath "$CM_BUILD_DIR/Build/ios/ipa" \
-
-          -exportOptionsPlist "$CM_BUILD_DIR/Build/ios/ExportOptions.plist" \
-
-          -allowProvisioningUpdates
-
-
-
-
-
+          source "$CM_ENV" 2>/dev/null || true
+          "$UNITY_BIN" -batchmode -nographics -quit -returnlicense 2>/dev/null || true
     artifacts:
-
-
       - Build/ios/ipa/*.ipa
-
       - Build/codemagic-unity.log
+      - Build/Xcode/**
 
-      - "**/*.alf"
-
-
-
-
-    publishing:
-
-
-      email:
-
-
-        recipients:
-
-          - user@example.com
-
-
-        notify:
-
-
-          success: true
-
-          failure: true
+  ios-xcode-only:
+    name: iOS Xcode export only (fallback)
+    max_build_duration: 90
+    instance_type: mac_mini_m2
+    environment:
+      groups:
+        - unity_credentials
+      vars:
+        UNITY_VERSION: "6000.5.2f1"
+        UNITY_CHANGESET: "eb73d3b415a1"
+    scripts:
+      - name: Unity export
+        script: |
+          set -e
+          TARGET="/Applications/Unity/Hub/Editor/${UNITY_VERSION}/Unity.app"
+          if [ ! -d "$TARGET" ]; then
+            yes Y | /Applications/Unity\ Hub.app/Contents/MacOS/Unity\ Hub -- --headless install \
+              --version "$UNITY_VERSION" --changeset "$UNITY_CHANGESET" -a arm64
+            yes Y | /Applications/Unity\ Hub.app/Contents/MacOS/Unity\ Hub -- --headless install-modules \
+              --version "$UNITY_VERSION" -m ios -a arm64
+          fi
+          export UNITY_BIN="$TARGET/Contents/MacOS/Unity"
+          mkdir -p "$HOME/.local/share/unity3d/Unity"
+          if [ -n "$UNITY_LICENSE" ]; then
+            echo "$UNITY_LICENSE" > "$HOME/.local/share/unity3d/Unity/Unity_lic.ulf"
+          else
+            "$UNITY_BIN" -batchmode -nographics -quit \
+              -serial "${UNITY_SERIAL?}" -username "${UNITY_EMAIL?}" -password "${UNITY_PASSWORD?}"
+          fi
+          "$UNITY_BIN" -batchmode -nographics -quit \
+            -projectPath "$CM_BUILD_DIR" \
+            -executeMethod TeleportNative.Editor.IosCiMenu.PrepareForIosExport \
+            -logFile "$CM_BUILD_DIR/Build/codemagic-unity.log"
+          "$UNITY_BIN" -batchmode -nographics -quit -returnlicense 2>/dev/null || true
+    artifacts:
+      - Build/Xcode/**
+      - Build/codemagic-unity.log
