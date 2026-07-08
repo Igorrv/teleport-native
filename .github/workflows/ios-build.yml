@@ -17,17 +17,10 @@ name: iOS Build
 
 on:
   workflow_dispatch:
-  push:
-    branches: [main]
-    paths:
-      - '.github/workflows/ios-build.yml'
-      - 'Assets/**'
-      - 'Packages/**'
-      - 'ProjectSettings/**'
-      - 'scripts/ios/sign-and-export.sh'
 
-# IPA assinado — so roda manualmente (requer secrets Apple).
-# Para teste no iPhone sem secrets Apple, use workflow "iOS Test (Sideloadly)".
+# IPA assinado — SOMENTE manual (requer secrets Apple).
+# Push em main NAO dispara este workflow.
+# Para IPA sem credenciais Apple: workflow "iOS Test (Sideloadly)".
 
 env:
   UNITY_VERSION: 6000.5.2f1

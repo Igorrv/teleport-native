@@ -7,6 +7,16 @@ name: iOS Test (Sideloadly)
 
 on:
   workflow_dispatch:
+  push:
+    branches: [main]
+    paths:
+      - '.github/workflows/ios-test-sideload.yml'
+      - 'Assets/**'
+      - 'Packages/**'
+      - 'ProjectSettings/**'
+      - 'scripts/ios/**'
+
+# IPA sem secrets Apple (Sideloadly). Requer apenas UNITY_LICENSE / EMAIL / PASSWORD.
 
 env:
   UNITY_VERSION: 6000.5.2f1
