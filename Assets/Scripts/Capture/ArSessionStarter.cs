@@ -24,10 +24,8 @@ namespace TeleportNative.Capture
             }
 
             _session.enabled = true;
-            if (ARSession.state == ARSessionState.None || ARSession.state == ARSessionState.CheckingAvailability)
-                ARSession.CheckAvailability();
-            ARSession.Reset();
-            Debug.Log("[Teleport] ARSession reset (" + ARSession.state + ")");
+            _session.Reset();
+            Debug.Log("[Teleport] ARSession reiniciada.");
         }
     }
 }
