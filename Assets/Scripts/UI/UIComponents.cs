@@ -40,7 +40,7 @@ namespace TeleportNative.UI
             var rt = (RectTransform)go.transform;
             rt.SetParent(parent, false);
             rt.sizeDelta = new Vector2(-1, 26);
-            var bg = go.GetComponent<Image>(); bg.sprite = UIFactory.RoundedSprite(13); bg.type = Image.Type.Sliced; bg.color = color;
+            var bg = go.GetComponent<Image>(); bg.sprite = UIFactory.RoundedSprite(13); bg.type = global::UnityEngine.UI.Image.Type.Sliced; bg.color = color;
             var lbl = UIFactory.Text(rt, text, T.CaptionSize, Color.white, TextAnchor.MiddleCenter, wrap: false, fit: false);
             UIFactory.Stretch((RectTransform)lbl.transform);
             var b = go.AddComponent<StatusBadgeView>(); b._bg = bg; b._label = lbl;

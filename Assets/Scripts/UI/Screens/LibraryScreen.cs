@@ -126,7 +126,7 @@ namespace TeleportNative.UI
             rt.sizeDelta = new Vector2(0, 168);
             UITween.Pop(rt, 0f);
 
-            var accent = UIFactory.Image(rt, "accent", T.Accent);
+            var accent = UIFactory.ColorBlock(rt, "accent", T.Accent);
             var art = accent.rectTransform;
             art.anchorMin = new Vector2(0, 0); art.anchorMax = new Vector2(0, 1);
             art.pivot = new Vector2(0, 0.5f); art.sizeDelta = new Vector2(4, 0);
@@ -177,7 +177,7 @@ namespace TeleportNative.UI
             rt.gameObject.AddComponent<Button>().onClick.AddListener(() => Open(s));
             UITween.Pop(rt, (_list.childCount - 1) * 0.05f);
 
-            var accent = UIFactory.Image(rt, "accent", s.Status == "Ready" ? T.Success : T.Primary);
+            var accent = UIFactory.ColorBlock(rt, "accent", s.Status == "Ready" ? T.Success : T.Primary);
             var art = accent.rectTransform;
             art.anchorMin = new Vector2(0, 0); art.anchorMax = new Vector2(0, 1);
             art.pivot = new Vector2(0, 0.5f); art.sizeDelta = new Vector2(4, 0);
@@ -206,12 +206,6 @@ namespace TeleportNative.UI
             del.pivot = new Vector2(1, 0.5f);
             del.anchoredPosition = new Vector2(-T.SpaceM, 0);
             del.sizeDelta = new Vector2(88, 32);
-            var delBtn = del.GetComponent<Button>();
-            if (delBtn != null) delBtn.onClick.RemoveAllListeners();
-            delBtn?.onClick.AddListener(() => DeleteSpace(s));
-            // Evita abrir o viewer ao tocar Excluir
-            var blocker = del.gameObject.AddComponent<Button>();
-            blocker.onClick.AddListener(() => DeleteSpace(s));
         }
 
         private void DeleteSpace(CoreSpace s)

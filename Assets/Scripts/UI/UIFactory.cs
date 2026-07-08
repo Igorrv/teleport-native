@@ -90,7 +90,7 @@ namespace TeleportNative.UI
             rt.SetParent(parent, false);
             var img = go.GetComponent<Image>();
             img.sprite = RoundedSprite(Mathf.RoundToInt(radius));
-            img.type = UnityEngine.UI.Image.Type.Sliced;
+            img.type = global::UnityEngine.UI.Image.Type.Sliced;
             img.color = bg;
             if (elevation)
             {
@@ -106,14 +106,14 @@ namespace TeleportNative.UI
         {
             var rt = Card(parent, name, T.Glass, radius, elevation: false);
             var img = rt.GetComponent<Image>();
-            var hl = Image(rt, "glass-hl", T.GlassHighlight);
+            var hl = ColorBlock(rt, "glass-hl", T.GlassHighlight);
             var hrt = (RectTransform)hl.transform;
             hrt.anchorMin = new Vector2(0f, 1f); hrt.anchorMax = new Vector2(1f, 1f);
             hrt.pivot = new Vector2(0.5f, 1f); hrt.sizeDelta = new Vector2(0f, 1.5f);
             return rt;
         }
 
-        public static Image Image(Transform parent, string name, Color color)
+        public static global::UnityEngine.UI.Image ColorBlock(Transform parent, string name, Color color)
         {
             var go = new GameObject(name, typeof(Image));
             go.transform.SetParent(parent, false);
@@ -169,7 +169,7 @@ namespace TeleportNative.UI
             rt.sizeDelta = new Vector2(0, T.ButtonHeight);
             var img = go.GetComponent<Image>();
             img.sprite = RoundedSprite(Mathf.RoundToInt(T.RadiusL));
-            img.type = UnityEngine.UI.Image.Type.Sliced;
+            img.type = global::UnityEngine.UI.Image.Type.Sliced;
             img.color = primary ? T.Primary : T.SurfaceRaised;
             if (primary)
             {
@@ -197,7 +197,7 @@ namespace TeleportNative.UI
             rt.sizeDelta = new Vector2(0, T.ButtonHeight);
             var img = go.GetComponent<UnityEngine.UI.Image>();
             img.sprite = RoundedSprite(Mathf.RoundToInt(T.RadiusS));
-            img.type = UnityEngine.UI.Image.Type.Sliced;
+            img.type = global::UnityEngine.UI.Image.Type.Sliced;
             img.color = T.SurfaceRaised;
 
             var ph = TextFieldChild(rt, placeholder, T.TextMuted);

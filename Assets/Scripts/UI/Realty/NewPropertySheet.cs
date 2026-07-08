@@ -104,7 +104,7 @@ namespace TeleportNative.UI
             dotGo.transform.SetParent(row, false);
             var dot = dotGo.GetComponent<Image>();
             dot.sprite = UIFactory.RoundedSprite(9);
-            dot.type = Image.Type.Sliced;
+            dot.type = global::UnityEngine.UI.Image.Type.Sliced;
             dot.color = selected ? T.Primary : T.Divider;
             var drt = (RectTransform)dotGo.transform;
             drt.anchorMin = new Vector2(1, 0.5f); drt.anchorMax = new Vector2(1, 0.5f);

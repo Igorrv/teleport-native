@@ -20,7 +20,7 @@ namespace TeleportNative.UI
             bg.color = new Color(T.Background.r, T.Background.g, T.Background.b, 0.94f);
 
             // Linha accent inferior (identidade visual)
-            var line = UIFactory.Image(rt, "accent-line", T.Primary);
+            var line = UIFactory.ColorBlock(rt, "accent-line", T.Primary);
             var lrt = line.rectTransform;
             lrt.anchorMin = new Vector2(0, 0); lrt.anchorMax = new Vector2(1, 0);
             lrt.pivot = new Vector2(0.5f, 0);
@@ -65,19 +65,19 @@ namespace TeleportNative.UI
             rt.anchoredPosition = Vector2.zero;
             var img = go.GetComponent<Image>();
             img.sprite = UIFactory.RoundedSprite(Mathf.RoundToInt(T.RadiusL));
-            img.type = Image.Type.Sliced;
+            img.type = global::UnityEngine.UI.Image.Type.Sliced;
             img.color = new Color(T.Surface.r, T.Surface.g, T.Surface.b, 0.96f);
             img.raycastTarget = true;
 
             // Handle visual (pill) no topo do sheet
-            var handle = UIFactory.Image(rt, "handle", T.Divider);
+            var handle = UIFactory.ColorBlock(rt, "handle", T.Divider);
             var hrt = handle.rectTransform;
             hrt.anchorMin = new Vector2(0.5f, 1); hrt.anchorMax = new Vector2(0.5f, 1);
             hrt.pivot = new Vector2(0.5f, 1);
             hrt.sizeDelta = new Vector2(40, 4);
             hrt.anchoredPosition = new Vector2(0, -10);
             handle.sprite = UIFactory.RoundedSprite(4);
-            handle.type = Image.Type.Sliced;
+            handle.type = global::UnityEngine.UI.Image.Type.Sliced;
             return rt;
         }
 
@@ -90,7 +90,7 @@ namespace TeleportNative.UI
             track.sizeDelta = new Vector2(0, height);
             var trackImg = trackGo.GetComponent<Image>();
             trackImg.sprite = UIFactory.RoundedSprite(Mathf.RoundToInt(height));
-            trackImg.type = Image.Type.Sliced;
+            trackImg.type = global::UnityEngine.UI.Image.Type.Sliced;
             trackImg.color = T.SurfaceRaised;
 
             var fillGo = new GameObject("fill", typeof(RectTransform), typeof(Image));
@@ -101,7 +101,7 @@ namespace TeleportNative.UI
             fillRt.offsetMin = fillRt.offsetMax = Vector2.zero;
             var fill = fillGo.GetComponent<Image>();
             fill.sprite = UIFactory.RoundedSprite(Mathf.RoundToInt(height));
-            fill.type = Image.Type.Sliced;
+            fill.type = global::UnityEngine.UI.Image.Type.Sliced;
             fill.color = T.Primary;
             return fill;
         }
@@ -121,7 +121,7 @@ namespace TeleportNative.UI
             rt.sizeDelta = new Vector2(0, 28);
             var img = go.GetComponent<Image>();
             img.sprite = UIFactory.RoundedSprite(Mathf.RoundToInt(T.RadiusS));
-            img.type = Image.Type.Sliced;
+            img.type = global::UnityEngine.UI.Image.Type.Sliced;
             img.color = active ? T.Primary : T.SurfaceRaised;
             var t = UIFactory.Text(rt, label, T.CaptionSize, active ? Color.white : T.TextMuted, TextAnchor.MiddleCenter, fit: false);
             UIFactory.Stretch(t.rectTransform);

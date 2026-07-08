@@ -18,7 +18,7 @@ namespace TeleportNative.UI
             UIFactory.Panel(Root, "bg", T.Background);
 
             // Glow sutil no topo (atmosfera premium)
-            var glow = UIFactory.Image(Root, "glow", new Color(T.Primary.r, T.Primary.g, T.Primary.b, 0.12f));
+            var glow = UIFactory.ColorBlock(Root, "glow", new Color(T.Primary.r, T.Primary.g, T.Primary.b, 0.12f));
             var grt = glow.rectTransform;
             grt.anchorMin = new Vector2(0.1f, 0.55f); grt.anchorMax = new Vector2(0.9f, 1f);
             grt.offsetMin = grt.offsetMax = Vector2.zero;

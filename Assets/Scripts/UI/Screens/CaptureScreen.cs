@@ -63,7 +63,7 @@ namespace TeleportNative.UI
             _ring = ringGo.GetComponent<Image>();
             _ring.sprite = UIFactory.White();
             _ring.color = T.Primary;
-            _ring.type = Image.Type.Filled;
+            _ring.type = global::UnityEngine.UI.Image.Type.Filled;
             _ring.fillMethod = Image.FillMethod.Radial360;
             _ring.fillAmount = 0;
             _ring.raycastTarget = false;
