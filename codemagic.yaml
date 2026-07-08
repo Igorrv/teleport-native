@@ -135,15 +135,13 @@ workflows:
 
 
 
-      - name: Export IPA
+            - name: Export IPA
         script: |
           set -e
 
-
           mkdir -p "$CM_BUILD_DIR/Build/ios/ipa"
 
-
-          cat > "$CM_BUILD_DIR/Build/ios/ExportOptions.plist" <<'PLIST'
+          cat > "$CM_BUILD_DIR/Build/ios/ExportOptions.plist" <<EOF
 <?xml version="1.0" encoding="UTF-8"?>
 <!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
 <plist version="1.0">
@@ -155,16 +153,14 @@ workflows:
     <string>automatic</string>
 </dict>
 </plist>
-PLIST
-
+EOF
 
           xcodebuild \
-          -exportArchive \
-          -archivePath "$CM_BUILD_DIR/Build/ios/TeleportNative.xcarchive" \
-          -exportPath "$CM_BUILD_DIR/Build/ios/ipa" \
-          -exportOptionsPlist "$CM_BUILD_DIR/Build/ios/ExportOptions.plist" \
-          -allowProvisioningUpdates
-
+            -exportArchive \
+            -archivePath "$CM_BUILD_DIR/Build/ios/TeleportNative.xcarchive" \
+            -exportPath "$CM_BUILD_DIR/Build/ios/ipa" \
+            -exportOptionsPlist "$CM_BUILD_DIR/Build/ios/ExportOptions.plist" \
+            -allowProvisioningUpdates
 
 
     artifacts:
