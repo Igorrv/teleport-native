@@ -10,124 +10,73 @@ workflows:
 
     environment:
 
-      groups:
-        - codemagic
-
-      vars:
-        UNITY_VERSION: "6000.5.2f1"
-        BUNDLE_ID: "com.teleportnative.app"
+      unity: 6000.5.2f1
 
       xcode: latest
+
       cocoapods: default
 
 
+      groups:
+        - codemagic
+
+
+      vars:
+
+        BUNDLE_ID: com.teleportnative.app
+
+        UNITY_VERSION: 6000.5.2f1
+
+
+
     cache:
+
       cache_paths:
+
         - $CM_BUILD_DIR/Library
+
+        - $HOME/Library/Unity
 
 
 
     scripts:
 
 
-      - name: Install Unity Editor
+      - name: Check Unity
 
         script: |
+
           set -e
 
 
-          echo "Installing Unity $UNITY_VERSION"
+          echo "Checking Unity"
 
 
-          echo "Checking Unity Hub"
+          which unity || true
 
 
-          /Applications/"Unity Hub.app"/Contents/MacOS/"Unity Hub" \
-          --version || true
+          echo "Unity version"
 
 
-
-          mkdir -p "$HOME/Library/Unity"
-
-
-
-          /Applications/"Unity Hub.app"/Contents/MacOS/"Unity Hub" \
-          --headless \
-          install \
-          --version "$UNITY_VERSION" \
-          --changeset eb73d3b415a1 \
-          --module ios \
-          --module mac-mono
-
-
-
-      - name: Locate Unity
-
-        script: |
-          set -e
-
-
-          echo "Searching Unity Editor"
-
-
-          UNITY_BIN=$(find "$HOME/Unity" \
-          -path "*/Contents/MacOS/Unity" \
-          -type f \
-          | head -1)
-
-
-
-          if [ -z "$UNITY_BIN" ]; then
-
-            UNITY_BIN=$(find "$HOME" \
-            -path "*/Unity.app/Contents/MacOS/Unity" \
-            -type f \
-            | head -1)
-
-          fi
-
-
-
-          if [ -z "$UNITY_BIN" ]; then
-
-            echo "Unity Editor not installed"
-
-            find "$HOME" -name Unity.app || true
-
-            exit 1
-
-          fi
-
-
-
-          echo "Unity found:"
-          echo "$UNITY_BIN"
-
-
-
-          "$UNITY_BIN" -version
-
-
-          echo "UNITY_BIN=$UNITY_BIN" >> $CM_ENV
-
-
+          unity -version || true
 
 
 
       - name: Unity Export Xcode
 
         script: |
+
           set -e
-
-
-          source $CM_ENV
 
 
           mkdir -p "$CM_BUILD_DIR/Build"
 
 
 
-          "$UNITY_BIN" \
+          echo "Exporting iOS Xcode project"
+
+
+          unity \
           -batchmode \
           -nographics \
           -quit \
@@ -137,18 +86,33 @@ workflows:
 
 
 
+          if [ ! -d "$CM_BUILD_DIR/Build/Xcode" ]; then
+
+              echo "Xcode project was not created"
 
 
-      - name: Build Xcode Archive
+              cat "$CM_BUILD_DIR/Build/codemagic-unity.log" || true
+
+
+              exit 1
+
+          fi
+
+
+
+      - name: Build Archive
 
         script: |
+
           set -e
 
 
           cd "$CM_BUILD_DIR/Build/Xcode"
 
 
+
           mkdir -p "$CM_BUILD_DIR/Build/ios"
+
 
 
           xcodebuild \
@@ -161,28 +125,35 @@ workflows:
 
 
 
-
-
       - name: Export IPA
 
         script: |
+
           set -e
 
 
           mkdir -p "$CM_BUILD_DIR/Build/ios"
 
 
-          printf '%s\n' \
-          '<?xml version="1.0" encoding="UTF-8"?>' \
-          '<plist version="1.0">' \
-          '<dict>' \
-          '<key>method</key>' \
-          '<string>development</string>' \
-          '<key>signingStyle</key>' \
-          '<string>automatic</string>' \
-          '</dict>' \
-          '</plist>' \
-          > "$CM_BUILD_DIR/Build/ios/ExportOptions.plist"
+
+          cat > "$CM_BUILD_DIR/Build/ios/ExportOptions.plist" <<'PLIST'
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+
+<plist version="1.0">
+
+<dict>
+
+<key>method</key>
+<string>development</string>
+
+<key>signingStyle</key>
+<string>automatic</string>
+
+</dict>
+
+</plist>
+PLIST
 
 
 
@@ -195,8 +166,25 @@ workflows:
 
 
 
-
     artifacts:
 
       - Build/ios/ipa/*.ipa
+
       - Build/codemagic-unity.log
+
+
+
+    publishing:
+
+      email:
+
+        recipients:
+
+          - user@example.com
+
+
+        notify:
+
+          success: true
+
+          failure: true
