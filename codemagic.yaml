@@ -78,7 +78,18 @@ workflows:
 
 
 
+      - name: Generate Unity License Request
+        script: |
+          set -e
 
+          "$UNITY_BIN" \
+          -batchmode \
+          -nographics \
+          -quit \
+          -createManualActivationFile \
+          -logFile -
+
+          ls -la
 
       - name: Unity Export Xcode
         script: |
