@@ -45,3 +45,9 @@ graphify-out/
 .claude/
 *.slnx
 /Build/
+
+# iOS Xcode — manter *.xcodeproj / *.xcworkspace versionados; ignorar artefatos locais
+ios/build/
+ios/DerivedData/
+ios/Pods/
+*.xcarchive

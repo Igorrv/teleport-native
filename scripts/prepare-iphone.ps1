@@ -19,9 +19,11 @@ Write-Host @"
 === teleport-native -> iPhone (camera AR) ===
 
 Windows NAO compila iOS. Fluxo:
-  1) Este script prepara o git
-  2) Codemagic (macOS) gera o .ipa com ARKit
+  1) Mac: Unity > Teleport > 8. Export iOS -> pasta ios/
+  2) git push ios/ + Codemagic workflow ios-ipa (sem Unity no CI)
   3) scripts/install-iphone.ps1 instala no iPhone via USB
+
+Veja BUILD_IOS.md
 "@
 
 if (-not (Get-Command git -ErrorAction SilentlyContinue)) {

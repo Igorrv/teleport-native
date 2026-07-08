@@ -77,42 +77,8 @@ namespace TeleportNative.Editor
         [MenuItem("Teleport/6. Build iOS (projeto Xcode)")]
         public static void BuildIos()
         {
-            if (!File.Exists("Assets/Main.unity"))
-            {
-                Debug.LogError("[Teleport] Rode antes o menu 'Teleport > 4. Montar cena Main (auto)'.");
-                return;
-            }
-
-            if (EditorUserBuildSettings.activeBuildTarget != BuildTarget.iOS)
-            {
-                EditorUserBuildSettings.SwitchActiveBuildTarget(BuildTargetGroup.iOS, BuildTarget.iOS);
-            }
-            EditorBuildSettings.scenes = new[]
-            {
-                new EditorBuildSettingsScene("Assets/Main.unity", true)
-            };
-
-            var options = new BuildPlayerOptions
-            {
-                scenes = new[] { "Assets/Main.unity" },
-                locationPathName = "Build/Xcode",
-                target = BuildTarget.iOS,
-                targetGroup = BuildTargetGroup.iOS,
-                options = BuildOptions.Development
-            };
-
-            Debug.Log("[Teleport] Exportando projeto Xcode -> Build/Xcode ...");
-            BuildReport report = BuildPipeline.BuildPlayer(options);
-            var summary = report.summary;
-
-            if (summary.result == BuildResult.Succeeded)
-            {
-                Debug.Log("[Teleport] Projeto Xcode OK -> Build/Xcode. Abra no Xcode, sign com seu Apple ID e rode no iPhone.");
-            }
-            else
-            {
-                Debug.LogError($"[Teleport] Build iOS {summary.result}. Observacao: iOS so compila em macOS. No Windows este metodo falha por design.");
-            }
+            Debug.Log("[Teleport] Build iOS redirecionado para ExportIosProject (ios/).");
+            ExportIosProject.Export();
         }
     }
 }

@@ -1,75 +1,47 @@
-name: Build iOS IPA
+# GitHub Actions — IPA a partir de ios/ (sem Unity)
+
+name: Build iOS IPA (Xcode only)
 
 on:
   workflow_dispatch:
-    inputs:
-      mode:
-        description: "xcode = mais rapido | ipa = tenta gerar IPA"
-        required: true
-        default: xcode
-        type: choice
-        options: [xcode, ipa]
 
 jobs:
   ios:
     runs-on: macos-14
-    timeout-minutes: 90
+    timeout-minutes: 45
     steps:
       - uses: actions/checkout@v4
 
-      - uses: actions/cache@v4
-        with:
-          path: Library
-          key: Library-v1-${{ hashFiles('Assets/**', 'Packages/**', 'ProjectSettings/**') }}
-
-      # So precisa de UNITY_LICENSE (.ulf) — Personal gratis, sem serial
-      # .\scripts\setup-unity-license.ps1
-      - uses: game-ci/unity-builder@v4
-        env:
-          UNITY_LICENSE: ${{ secrets.UNITY_LICENSE }}
-        with:
-          unityVersion: 6000.5.2f1
-          targetPlatform: iOS
-          projectPath: .
-          buildMethod: TeleportNative.Editor.IosCiMenu.PrepareForIosExport
-          allowDirtyBuild: true
-
-      - uses: actions/upload-artifact@v4
-        with:
-          name: ios-xcode
-          path: Build/Xcode
-          retention-days: 7
-
-      - name: Build IPA (development)
-        if: inputs.mode == 'ipa'
+      - name: Verificar ios/
         run: |
-          set -e
-          cd Build/Xcode
-          pod install || true
-          WS="Unity-iPhone.xcworkspace"
-          if [ -d "$WS" ]; then
-            xcodebuild -allowProvisioningUpdates -workspace "$WS" -scheme Unity-iPhone \
-              -configuration Release -destination 'generic/platform=iOS' \
-              -archivePath ../ios/TeleportNative.xcarchive archive
-          else
-            xcodebuild -allowProvisioningUpdates -project Unity-iPhone.xcodeproj -scheme Unity-iPhone \
-              -configuration Release -destination 'generic/platform=iOS' \
-              -archivePath ../ios/TeleportNative.xcarchive archive
-          fi
-          mkdir -p ../ios/ipa
-          printf '%s\n' '<?xml version="1.0" encoding="UTF-8"?>' \
-            '<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">' \
-            '<plist version="1.0"><dict><key>method</key><string>development</string>' \
-            '<key>signingStyle</key><string>automatic</string></dict></plist>' \
-            > ../ios/ExportOptions.plist
-          xcodebuild -exportArchive -archivePath ../ios/TeleportNative.xcarchive \
-            -exportPath ../ios/ipa -exportOptionsPlist ../ios/ExportOptions.plist \
+          test -d ios/Unity-iPhone.xcodeproj || {
+            echo "ios/ vazio — exporte no Mac (BUILD_IOS.md) e commite."
+            exit 1
+          }
+
+      - name: pod install
+        run: |
+          cd ios
+          pod install
+
+      - name: Build IPA
+        run: |
+          xcodebuild -allowProvisioningUpdates \
+            -workspace ios/Unity-iPhone.xcworkspace \
+            -scheme Unity-iPhone \
+            -configuration Release \
+            -destination 'generic/platform=iOS' \
+            -archivePath build/ios/TeleportNative.xcarchive \
+            archive
+          mkdir -p build/ios/ipa
+          xcodebuild -exportArchive \
+            -archivePath build/ios/TeleportNative.xcarchive \
+            -exportPath build/ios/ipa \
+            -exportOptionsPlist ios/ExportOptions.plist \
             -allowProvisioningUpdates
 
       - uses: actions/upload-artifact@v4
-        if: inputs.mode == 'ipa'
         with:
           name: ios-ipa
-          path: Build/ios/ipa/*.ipa
-          if-no-files-found: ignore
-          retention-days: 7
+          path: build/ios/ipa/*.ipa
+          if-no-files-found: error

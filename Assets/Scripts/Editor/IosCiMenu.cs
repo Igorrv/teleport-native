@@ -4,27 +4,14 @@ using UnityEngine;
 
 namespace TeleportNative.Editor
 {
-    /// <summary>
-    /// Prepara o projeto iOS para CI (macOS) ou export Xcode local.
-    /// Windows: use scripts/install-iphone.ps1 apos baixar o IPA do Codemagic/GitHub Actions.
-    /// macOS CLI:
-    ///   Unity -batchmode -quit -projectPath . -executeMethod TeleportNative.Editor.IosCiMenu.PrepareForIosExport
-    /// </summary>
+    /// <summary>Atalho legado — delega para ExportIosProject (Xcode -> ios/).</summary>
     public static class IosCiMenu
     {
-        [MenuItem("Teleport/8. Preparar export iOS (CI/Xcode)")]
+        [MenuItem("Teleport/9. Preparar export iOS (legado -> menu 8)")]
         public static void PrepareForIosExport()
         {
-            if (!File.Exists("Assets/Resources/config.json"))
-                BuildMenu.GenConfig();
-
-            if (!File.Exists("Assets/Main.unity"))
-                SceneBuilder.BuildMainScene();
-            else
-                ArSetupMenu.CompleteArRigInScene();
-
-            BuildMenu.PrepIOS();
-            DeviceBuildMenu.BuildIos();
+            Debug.Log("[Teleport] Use Teleport > 8. Export iOS (Xcode -> ios/). Redirecionando...");
+            ExportIosProject.Export();
         }
     }
 }
