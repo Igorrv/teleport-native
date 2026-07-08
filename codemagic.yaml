@@ -29,15 +29,25 @@ workflows:
     scripts:
 
 
-      - name: Check Environment
+      - name: Debug Unity Installation
         script: |
           set -e
 
-          echo "Applications:"
+          echo "===== APPLICATIONS ====="
+
           ls -la /Applications
 
-          echo "Unity folder:"
+          echo ""
+          echo "===== UNITY DIRECTORY ====="
+
           ls -la /Applications/Unity || true
+
+          echo ""
+          echo "===== SEARCH UNITY FILES ====="
+
+          find /Applications/Unity -type f -name "Unity" 2>/dev/null || true
+
+          find /Applications/Unity -type f -perm +111 2>/dev/null || true
 
 
 
@@ -46,45 +56,33 @@ workflows:
           set -e
 
 
-          echo "Searching Unity..."
+          echo "Finding Unity executable..."
 
 
-          if [ -x "/Applications/Unity/Unity.app/Contents/MacOS/Unity" ]; then
-
-              UNITY_BIN="/Applications/Unity/Unity.app/Contents/MacOS/Unity"
-
-
-          elif [ -x "/Applications/Unity.app/Contents/MacOS/Unity" ]; then
-
-              UNITY_BIN="/Applications/Unity.app/Contents/MacOS/Unity"
-
-
-          else
-
-              UNITY_BIN=$(find /Applications \
-              -path "*/Unity.app/Contents/MacOS/Unity" \
-              -type f \
-              | head -1)
-
-          fi
+          UNITY_BIN=$(find /Applications/Unity \
+          -type f \
+          -name "Unity" \
+          -perm +111 \
+          2>/dev/null | head -1)
 
 
 
           if [ -z "$UNITY_BIN" ]; then
 
-              echo "Unity executable not found"
+            echo "No Unity executable found inside /Applications/Unity"
 
-              find /Applications -name "Unity.app" || true
+            echo "Full tree:"
 
-              exit 1
+            find /Applications/Unity -maxdepth 5 -type f | head -200
+
+            exit 1
 
           fi
 
 
 
-          echo "Unity executable:"
+          echo "FOUND UNITY:"
           echo "$UNITY_BIN"
-
 
 
           "$UNITY_BIN" -version
@@ -97,7 +95,6 @@ workflows:
 
 
       - name: Unity Export Xcode
-
         script: |
           set -e
 
@@ -108,7 +105,7 @@ workflows:
           mkdir -p "$CM_BUILD_DIR/Build"
 
 
-          echo "Running Unity:"
+          echo "Executing Unity:"
           echo "$UNITY_BIN"
 
 
@@ -125,13 +122,14 @@ workflows:
 
           if [ ! -d "$CM_BUILD_DIR/Build/Xcode" ]; then
 
-              echo "Xcode export failed"
+            echo "Unity did not generate Xcode project"
 
-              cat "$CM_BUILD_DIR/Build/codemagic-unity.log" || true
+            cat "$CM_BUILD_DIR/Build/codemagic-unity.log" || true
 
-              exit 1
+            exit 1
 
           fi
+
 
 
 
@@ -139,6 +137,7 @@ workflows:
       - name: Build Xcode Archive
         script: |
           set -e
+
 
           cd "$CM_BUILD_DIR/Build/Xcode"
 
@@ -193,20 +192,4 @@ workflows:
     artifacts:
 
       - Build/ios/ipa/*.ipa
-
       - Build/codemagic-unity.log
-
-
-
-    publishing:
-
-      email:
-
-        recipients:
-
-          - user@example.com
-
-        notify:
-
-          success: true
-          failure: true
