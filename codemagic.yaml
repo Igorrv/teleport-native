@@ -14,8 +14,8 @@ workflows:
         - codemagic
 
       vars:
-        BUNDLE_ID: com.teleportnative.app
-        UNITY_VERSION: 6000.5.2f1
+        UNITY_VERSION: "6000.5.2f1"
+        BUNDLE_ID: "com.teleportnative.app"
 
       xcode: latest
       cocoapods: default
@@ -26,54 +26,73 @@ workflows:
         - $CM_BUILD_DIR/Library
 
 
+
     scripts:
 
 
-      - name: Debug Unity Installation
+      - name: Install Unity Editor
+
         script: |
           set -e
 
-          echo "===== APPLICATIONS ====="
 
-          ls -la /Applications
+          echo "Installing Unity $UNITY_VERSION"
 
-          echo ""
-          echo "===== UNITY DIRECTORY ====="
 
-          ls -la /Applications/Unity || true
+          echo "Checking Unity Hub"
 
-          echo ""
-          echo "===== SEARCH UNITY FILES ====="
 
-          find /Applications/Unity -type f -name "Unity" 2>/dev/null || true
+          /Applications/"Unity Hub.app"/Contents/MacOS/"Unity Hub" \
+          --version || true
 
-          find /Applications/Unity -type f -perm +111 2>/dev/null || true
+
+
+          mkdir -p "$HOME/Library/Unity"
+
+
+
+          /Applications/"Unity Hub.app"/Contents/MacOS/"Unity Hub" \
+          --headless \
+          install \
+          --version "$UNITY_VERSION" \
+          --changeset eb73d3b415a1 \
+          --module ios \
+          --module mac-mono
 
 
 
       - name: Locate Unity
+
         script: |
           set -e
 
 
-          echo "Finding Unity executable..."
+          echo "Searching Unity Editor"
 
 
-          UNITY_BIN=$(find /Applications/Unity \
+          UNITY_BIN=$(find "$HOME/Unity" \
+          -path "*/Contents/MacOS/Unity" \
           -type f \
-          -name "Unity" \
-          -perm +111 \
-          2>/dev/null | head -1)
+          | head -1)
 
 
 
           if [ -z "$UNITY_BIN" ]; then
 
-            echo "No Unity executable found inside /Applications/Unity"
+            UNITY_BIN=$(find "$HOME" \
+            -path "*/Unity.app/Contents/MacOS/Unity" \
+            -type f \
+            | head -1)
 
-            echo "Full tree:"
+          fi
 
-            find /Applications/Unity -maxdepth 5 -type f | head -200
+
+
+          if [ -z "$UNITY_BIN" ]; then
+
+            echo "Unity Editor not installed"
+
+            find "$HOME" -name Unity.app || true
 
             exit 1
 
@@ -81,8 +100,9 @@ workflows:
 
 
 
-          echo "FOUND UNITY:"
+          echo "Unity found:"
           echo "$UNITY_BIN"
+
 
 
           "$UNITY_BIN" -version
@@ -95,6 +115,7 @@ workflows:
 
 
       - name: Unity Export Xcode
+
         script: |
           set -e
 
@@ -103,10 +124,6 @@ workflows:
 
 
           mkdir -p "$CM_BUILD_DIR/Build"
-
-
-          echo "Executing Unity:"
-          echo "$UNITY_BIN"
 
 
 
@@ -120,21 +137,10 @@ workflows:
 
 
 
-          if [ ! -d "$CM_BUILD_DIR/Build/Xcode" ]; then
-
-            echo "Unity did not generate Xcode project"
-
-            cat "$CM_BUILD_DIR/Build/codemagic-unity.log" || true
-
-            exit 1
-
-          fi
-
-
-
 
 
       - name: Build Xcode Archive
+
         script: |
           set -e
 
@@ -158,6 +164,7 @@ workflows:
 
 
       - name: Export IPA
+
         script: |
           set -e
 
