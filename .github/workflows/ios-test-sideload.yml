@@ -1,0 +1,61 @@
+# IPA para teste no iPhone via Sideloadly (sem secrets Apple)
+#
+# Secrets: UNITY_LICENSE, UNITY_EMAIL, UNITY_PASSWORD
+# Disparo: Actions > iOS Test (Sideloadly) > Run workflow
+
+name: iOS Test (Sideloadly)
+
+on:
+  workflow_dispatch:
+
+env:
+  UNITY_VERSION: 6000.5.2f1
+
+jobs:
+  build-test-ipa:
+    name: Unity → IPA (Sideloadly)
+    runs-on: macos-latest
+    timeout-minutes: 120
+
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          lfs: true
+
+      - uses: actions/cache@v4
+        with:
+          path: Library
+          key: Library-${{ env.UNITY_VERSION }}-${{ hashFiles('Assets/**', 'Packages/**', 'ProjectSettings/**') }}
+          restore-keys: |
+            Library-${{ env.UNITY_VERSION }}-
+
+      - name: Unity — export Xcode
+        uses: game-ci/unity-builder@v4
+        env:
+          UNITY_LICENSE: ${{ secrets.UNITY_LICENSE }}
+          UNITY_EMAIL: ${{ secrets.UNITY_EMAIL }}
+          UNITY_PASSWORD: ${{ secrets.UNITY_PASSWORD }}
+        with:
+          unityVersion: ${{ env.UNITY_VERSION }}
+          targetPlatform: iOS
+          projectPath: .
+          buildMethod: TeleportNative.Editor.BuildiOS.Build
+          allowDirtyBuild: true
+          versioning: None
+          customParameters: -logFile Build/unity-export.log
+
+      - name: CocoaPods
+        run: |
+          cd ios
+          pod install --repo-update || pod install
+
+      - name: Build IPA (Sideloadly)
+        run: |
+          chmod +x scripts/ios/build-unsigned-sideload.sh
+          scripts/ios/build-unsigned-sideload.sh
+
+      - uses: actions/upload-artifact@v4
+        with:
+          name: TeleportNative-sideload-ipa
+          path: build/TeleportNative-unsigned.ipa
+          retention-days: 14

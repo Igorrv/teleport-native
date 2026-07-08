@@ -24,7 +24,10 @@ on:
       - 'Assets/**'
       - 'Packages/**'
       - 'ProjectSettings/**'
-      - 'scripts/ios/**'
+      - 'scripts/ios/sign-and-export.sh'
+
+# IPA assinado — so roda manualmente (requer secrets Apple).
+# Para teste no iPhone sem secrets Apple, use workflow "iOS Test (Sideloadly)".
 
 env:
   UNITY_VERSION: 6000.5.2f1
