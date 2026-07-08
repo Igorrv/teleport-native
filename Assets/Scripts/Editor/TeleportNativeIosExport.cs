@@ -1,6 +1,5 @@
 using System.IO;
 using UnityEditor;
-using UnityEditor.iOS;
 using UnityEditor.Build;
 using UnityEditor.Build.Reporting;
 using UnityEngine;
@@ -57,7 +56,7 @@ namespace TeleportNative.Editor
             };
 
             Debug.Log("[Teleport] Exportando Xcode -> " + BuildDir + " ...");
-            BuildReport report = BuildPipeline.BuildPlayer(options);
+            BuildReport report = UnityEditor.BuildPipeline.BuildPlayer(options);
             if (report.summary.result != BuildResult.Succeeded)
             {
                 Debug.LogError("[Teleport] Export iOS falhou: " + report.summary.result);
@@ -95,11 +94,11 @@ namespace TeleportNative.Editor
 
             PlayerSettings.applicationIdentifier = BundleId;
             PlayerSettings.SetScriptingBackend(NamedBuildTarget.iOS, ScriptingImplementation.IL2CPP);
-            PlayerSettings.SetArchitecture(NamedBuildTarget.iOS, OSArchitecture.ARM64);
+            PlayerSettings.SetArchitecture(BuildTargetGroup.iOS, 1); // ARM64
 
             try { PlayerSettings.iOS.targetOSVersionString = "15.0"; } catch { /* API antiga */ }
 
-            EditorUserBuildSettings.iOSBuildConfigType = iOSBuildType.Release;
+            EditorUserBuildSettings.iOSXcodeBuildConfig = XcodeBuildConfig.Release;
             EditorUserBuildSettings.symlinkSources = false;
 
             Debug.Log("[Teleport] iOS: IL2CPP, ARM64, min 15.0, Release, bundle=" + BundleId);
