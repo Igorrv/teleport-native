@@ -24,8 +24,9 @@ namespace TeleportNative.Editor
         {
             if (Application.platform != RuntimePlatform.OSXEditor)
             {
-                Debug.LogError("[Teleport] Export iOS so funciona no Unity macOS (modulo iOS). " +
-                               "Use um Mac, depois commite a pasta ios/ e rode Codemagic.");
+                Debug.LogError("[Teleport] Export iOS exige Unity macOS (modulo iOS). " +
+                               "No Windows use Codemagic workflow ios-test (Unity roda na nuvem).");
+                ExitBatch(1);
                 return;
             }
 
@@ -36,6 +37,7 @@ namespace TeleportNative.Editor
             if (!File.Exists(MainScene))
             {
                 Debug.LogError("[Teleport] Cena Main ausente. Rode Teleport > 4. Montar cena Main.");
+                ExitBatch(1);
                 return;
             }
 
@@ -59,16 +61,21 @@ namespace TeleportNative.Editor
             if (report.summary.result != BuildResult.Succeeded)
             {
                 Debug.LogError("[Teleport] Export iOS falhou: " + report.summary.result);
+                ExitBatch(1);
                 return;
             }
 
             SyncToIosFolder();
             WriteCodemagicFiles(IosDir);
 
-            Debug.Log("[Teleport] Export OK.\n" +
-                      "  ios/Unity-iPhone.xcodeproj pronto para git push.\n" +
-                      "  No Mac: cd ios && pod install\n" +
-                      "  Depois: Codemagic workflow ios-ipa (sem Unity).");
+            Debug.Log("[Teleport] Export OK -> ios/Unity-iPhone.xcodeproj");
+            ExitBatch(0);
+        }
+
+        private static void ExitBatch(int code)
+        {
+            if (Application.isBatchMode)
+                EditorApplication.Exit(code);
         }
 
         private static void PrepareProject()

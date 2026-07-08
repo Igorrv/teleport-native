@@ -1,12 +1,88 @@
-# Codemagic — SOMENTE gera .ipa a partir de ios/ (Xcode exportado no Mac).
-# Sem Unity, sem licenca, sem ALF/ULF no CI.
+# Codemagic — geracao de IPA para teste no iPhone
 #
-# Pre-requisito no repo: ios/Unity-iPhone.xcodeproj (+ pod install gera .xcworkspace)
-# Export local: Unity Mac > Teleport > 8. Export iOS  (veja BUILD_IOS.md)
+# WINDOWS (sem Mac): use workflow "ios-test" — Unity + Xcode rodam no Mac da Codemagic
+#   1. .\scripts\setup-unity-license.ps1  (conta Unity Personal GRATIS, sem serial)
+#   2. Codemagic > Environment > group "unity_credentials" > UNITY_LICENSE = conteudo .ulf
+#   3. Codemagic > Team settings > Apple Developer Portal (Apple ID)
+#   4. Start build "ios-test" > baixar .ipa > install-iphone.ps1
+#
+# COM Mac + ios/ no Git: workflow "ios-ipa" (so compila, mais rapido)
 
 workflows:
+  ios-test:
+    name: iOS Test (Unity + IPA) — use no Windows
+    max_build_duration: 120
+    instance_type: mac_mini_m2
+    environment:
+      groups:
+        - unity_credentials
+      ios_signing:
+        distribution_type: development
+        bundle_identifier: com.teleportnative.app
+      vars:
+        UNITY_VERSION: "6000.5.2f1"
+        UNITY_CHANGESET: "eb73d3b415a1"
+      xcode: latest
+      cocoapods: default
+    scripts:
+      - name: Instalar Unity iOS
+        script: |
+          set -e
+          TARGET="/Applications/Unity/Hub/Editor/${UNITY_VERSION}/Unity.app"
+          if [ ! -d "$TARGET" ]; then
+            yes Y | /Applications/Unity\ Hub.app/Contents/MacOS/Unity\ Hub -- --headless install \
+              --version "$UNITY_VERSION" --changeset "$UNITY_CHANGESET" -a arm64
+            yes Y | /Applications/Unity\ Hub.app/Contents/MacOS/Unity\ Hub -- --headless install-modules \
+              --version "$UNITY_VERSION" -m ios -a arm64
+          fi
+          echo "UNITY_BIN=$TARGET/Contents/MacOS/Unity" >> "$CM_ENV"
+
+      - name: Licenca Unity (.ulf Personal)
+        script: |
+          set -e
+          source "$CM_ENV"
+          mkdir -p "$HOME/.local/share/unity3d/Unity"
+          if [ -z "$UNITY_LICENSE" ]; then
+            echo "Falta UNITY_LICENSE. Rode setup-unity-license.ps1 no Windows."
+            exit 1
+          fi
+          echo "$UNITY_LICENSE" > "$HOME/.local/share/unity3d/Unity/Unity_lic.ulf"
+
+      - name: Unity export Xcode
+        script: |
+          set -e
+          source "$CM_ENV"
+          "$UNITY_BIN" -batchmode -nographics -quit \
+            -projectPath "$CM_BUILD_DIR" \
+            -executeMethod TeleportNative.Editor.ExportIosProject.Export \
+            -logFile "$CM_BUILD_DIR/Build/unity-export.log"
+          test -d "$CM_BUILD_DIR/ios/Unity-iPhone.xcodeproj"
+
+      - name: pod install
+        script: cd ios && pod install
+
+      - name: xcode-project use-profiles
+        script: xcode-project use-profiles
+
+      - name: xcode-project build-ipa
+        script: |
+          set -e
+          xcode-project build-ipa \
+            --workspace ios/Unity-iPhone.xcworkspace \
+            --scheme Unity-iPhone \
+            --config Release \
+            --export-options-plist ios/ExportOptions.plist
+
+      - name: Devolver licenca Unity
+        script: |
+          source "$CM_ENV" 2>/dev/null || true
+          "$UNITY_BIN" -batchmode -nographics -quit -returnlicense 2>/dev/null || true
+    artifacts:
+      - build/ios/ipa/*.ipa
+      - Build/unity-export.log
+
   ios-ipa:
-    name: iOS IPA
+    name: iOS IPA (so Xcode — requer ios/ no Git)
     max_build_duration: 45
     instance_type: mac_mini_m2
     environment:
@@ -19,12 +95,10 @@ workflows:
       - name: pod install
         script: |
           set -e
-          test -d ios/Unity-iPhone.xcodeproj || { echo "Falta ios/ — exporte no Mac (BUILD_IOS.md)"; exit 1; }
+          test -d ios/Unity-iPhone.xcodeproj || { echo "Falta ios/ no Git — use ios-test"; exit 1; }
           cd ios && pod install
-
       - name: xcode-project use-profiles
         script: xcode-project use-profiles
-
       - name: xcode-project build-ipa
         script: |
           set -e
