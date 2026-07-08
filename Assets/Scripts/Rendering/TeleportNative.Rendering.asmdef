@@ -1,0 +1,13 @@
+{
+    "name": "TeleportNative.Rendering",
+    "rootNamespace": "TeleportNative.Rendering",
+    "references": [ "TeleportNative.Core", "TeleportNative.Performance", "TeleportNative.Network" ],
+    "includePlatforms": [],
+    "excludePlatforms": [],
+    "allowUnsafeCode": false,
+    "overrideReferences": false,
+    "autoReferenced": false,
+    "defineConstraints": [],
+    "versionDefines": [],
+    "noEngineReferences": false
+}

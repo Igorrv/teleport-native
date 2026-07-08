@@ -1,0 +1,13 @@
+{
+  "permissions": {
+    "allow": [
+      "WebSearch",
+      "Read(//c/Users/Admin/AppData/Local/Android/Sdk/platform-tools/**)",
+      "Read(//c/Users/Admin/AppData/Local/Android/Sdk/emulator/**)",
+      "Read(//c/Users/Admin/AppData/Local/Android/Sdk/system-images/**)",
+      "Bash(exit 1)",
+      "Bash(powershell.exe -NoProfile -Command \"Compress-Archive -Path 'C:\\\\xampp\\\\htdocs\\\\GLM-5.2\\\\teleport-native' -DestinationPath 'C:\\\\xampp\\\\htdocs\\\\GLM-5.2\\\\teleport-native.zip' -Force\")",
+      "Read(//c/xampp/htdocs/GLM-5.2/**)"
+    ]
+  }
+}

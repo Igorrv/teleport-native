@@ -1,0 +1,22 @@
+{
+    "name": "TeleportNative.Editor",
+    "rootNamespace": "TeleportNative.Editor",
+    "references": [
+        "TeleportNative.Core",
+        "TeleportNative.UI",
+        "TeleportNative.Rendering",
+        "TeleportNative.Capture",
+        "Unity.XR.Management",
+        "Unity.XR.Management.Editor",
+        "Unity.XR.ARFoundation",
+        "Unity.XR.CoreUtils"
+    ],
+    "includePlatforms": [ "Editor" ],
+    "excludePlatforms": [],
+    "allowUnsafeCode": false,
+    "overrideReferences": false,
+    "autoReferenced": false,
+    "defineConstraints": [],
+    "versionDefines": [],
+    "noEngineReferences": false
+}

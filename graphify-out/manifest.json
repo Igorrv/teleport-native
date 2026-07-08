@@ -1,0 +1,437 @@
+{
+  ".claude/settings.local.json": {
+    "mtime": 1782180693.8450625,
+    "ast_hash": "8e62d2d333b2d0893995b42c4af13ecf",
+    "semantic_hash": ""
+  },
+  "Assets/Scripts/Capture/ARCaptureSession.cs": {
+    "mtime": 1783404807.113646,
+    "ast_hash": "c40a0728c1853faa6d71031f4d640ed5",
+    "semantic_hash": ""
+  },
+  "Assets/Scripts/Capture/BlurDetector.cs": {
+    "mtime": 1782173596.7538948,
+    "ast_hash": "84961c18e36baccee5e8236fce799cf5",
+    "semantic_hash": ""
+  },
+  "Assets/Scripts/Capture/CoverageTracker.cs": {
+    "mtime": 1782173588.5356188,
+    "ast_hash": "20fa10714ff5574b3a662c39e3fab26c",
+    "semantic_hash": ""
+  },
+  "Assets/Scripts/Capture/FrameSelector.cs": {
+    "mtime": 1783401638.9932742,
+    "ast_hash": "4bf480c229136661b2bdf4cf9b72a595",
+    "semantic_hash": ""
+  },
+  "Assets/Scripts/Capture/ICaptureSession.cs": {
+    "mtime": 1782173602.8595607,
+    "ast_hash": "4cca11e9dde3a7d2cb9fb2ab688d5367",
+    "semantic_hash": ""
+  },
+  "Assets/Scripts/Capture/IFrameSelector.cs": {
+    "mtime": 1782173686.2320397,
+    "ast_hash": "8b9f2a54e413ddaf6fd358e0085eef4b",
+    "semantic_hash": ""
+  },
+  "Assets/Scripts/Core/App/AppFlow.cs": {
+    "mtime": 1782173431.8357387,
+    "ast_hash": "c65c17ac3938bcd1f1dd6c2cf0aea545",
+    "semantic_hash": ""
+  },
+  "Assets/Scripts/Core/App/AppScreen.cs": {
+    "mtime": 1782173425.8513622,
+    "ast_hash": "bd978050a659898cb5cf1f446be59d8a",
+    "semantic_hash": ""
+  },
+  "Assets/Scripts/Core/Common/Result.cs": {
+    "mtime": 1782173422.2830281,
+    "ast_hash": "079ff9dde28f3804ddf9b23a18a32314",
+    "semantic_hash": ""
+  },
+  "Assets/Scripts/Core/Contracts/IHaptics.cs": {
+    "mtime": 1782173420.920071,
+    "ast_hash": "ee5f49f7f8be565078b14d0b8c9511c5",
+    "semantic_hash": ""
+  },
+  "Assets/Scripts/Core/Contracts/IRuntimeConfig.cs": {
+    "mtime": 1782173413.306334,
+    "ast_hash": "7967e43558709de6efaa36e35c4c1917",
+    "semantic_hash": ""
+  },
+  "Assets/Scripts/Core/Contracts/RuntimeConfig.cs": {
+    "mtime": 1782176326.6476178,
+    "ast_hash": "839198b399398489426706bd9282a761",
+    "semantic_hash": ""
+  },
+  "Assets/Scripts/Core/DesignSystem/DesignTokens.cs": {
+    "mtime": 1782173452.5291433,
+    "ast_hash": "c3bcdede2ad0dd8d2bfc6890cfb56df2",
+    "semantic_hash": ""
+  },
+  "Assets/Scripts/Core/Domain/ReconstructionStatus.cs": {
+    "mtime": 1782173443.9221282,
+    "ast_hash": "351787ee8f87ae148a71f76be909f71c",
+    "semantic_hash": ""
+  },
+  "Assets/Scripts/Core/Domain/SceneContract.cs": {
+    "mtime": 1782173435.1625795,
+    "ast_hash": "ef9206361cbe005984945649b173582c",
+    "semantic_hash": ""
+  },
+  "Assets/Scripts/Core/Domain/Space.cs": {
+    "mtime": 1782173438.8212998,
+    "ast_hash": "2a72e426f36cf8758e9c353612a54084",
+    "semantic_hash": ""
+  },
+  "Assets/Scripts/Core/Infrastructure/ILogger.cs": {
+    "mtime": 1782173408.0863924,
+    "ast_hash": "5270e6dd413a438e7d832f0a459c59b6",
+    "semantic_hash": ""
+  },
+  "Assets/Scripts/Core/Infrastructure/UnityLogger.cs": {
+    "mtime": 1782173409.07365,
+    "ast_hash": "d1a4b2e7dcf55384a076f9d2bd493676",
+    "semantic_hash": ""
+  },
+  "Assets/Scripts/Editor/BuildMenu.cs": {
+    "mtime": 1783405559.1652677,
+    "ast_hash": "8b1eb8ccfebb8bf20c584bd869fd6244",
+    "semantic_hash": ""
+  },
+  "Assets/Scripts/Editor/DeviceBuildMenu.cs": {
+    "mtime": 1782179733.9204414,
+    "ast_hash": "ae6d5c74dcacf566ceccd8d652f0f35e",
+    "semantic_hash": ""
+  },
+  "Assets/Scripts/Editor/LocalRunMenu.cs": {
+    "mtime": 1783405018.4010053,
+    "ast_hash": "4200d26cc1ea3144cf6ff328d056596c",
+    "semantic_hash": ""
+  },
+  "Assets/Scripts/Editor/SceneBuilder.cs": {
+    "mtime": 1783405532.2336242,
+    "ast_hash": "d5d493a2c4772af80fc121afb505868c",
+    "semantic_hash": ""
+  },
+  "Assets/Scripts/Network/HomeViewReconstructionProvider.cs": {
+    "mtime": 1782173905.6780982,
+    "ast_hash": "dd2252dc5b86c3e7eb8a952191ac8c54",
+    "semantic_hash": ""
+  },
+  "Assets/Scripts/Network/IReconstructionProvider.cs": {
+    "mtime": 1782173893.9007566,
+    "ast_hash": "e206b1f0e8fb370f464913a9aee6b5f3",
+    "semantic_hash": ""
+  },
+  "Assets/Scripts/Network/ISceneRepository.cs": {
+    "mtime": 1782173825.1553974,
+    "ast_hash": "675722c29d84017cac15350ed072441a",
+    "semantic_hash": ""
+  },
+  "Assets/Scripts/Network/ISplatCache.cs": {
+    "mtime": 1782173831.3859463,
+    "ast_hash": "569f72f6054a71b4e45686648c5bebd0",
+    "semantic_hash": ""
+  },
+  "Assets/Scripts/Network/IStorage.cs": {
+    "mtime": 1782173819.1533368,
+    "ast_hash": "21e9f759709bd86817c827d82c75552b",
+    "semantic_hash": ""
+  },
+  "Assets/Scripts/Network/LocalStorage.cs": {
+    "mtime": 1782173824.2026777,
+    "ast_hash": "2b572bf05d7fbf2119de2647348be598",
+    "semantic_hash": ""
+  },
+  "Assets/Scripts/Network/ReconstructionClient.cs": {
+    "mtime": 1783404873.7998862,
+    "ast_hash": "c1e8b034f023494a2c932aef502e02d6",
+    "semantic_hash": ""
+  },
+  "Assets/Scripts/Network/RestClient.cs": {
+    "mtime": 1783404868.1743917,
+    "ast_hash": "d2d95240fed7bbefdffc23250b98a196",
+    "semantic_hash": ""
+  },
+  "Assets/Scripts/Network/SceneRepository.cs": {
+    "mtime": 1782173829.0961897,
+    "ast_hash": "aaa96eaad114e65b63af4e0f36850bf5",
+    "semantic_hash": ""
+  },
+  "Assets/Scripts/Network/SplatCache.cs": {
+    "mtime": 1782173835.9417596,
+    "ast_hash": "66c4b46345cac19ccf90d6d481962f6b",
+    "semantic_hash": ""
+  },
+  "Assets/Scripts/Performance/DeviceProfiler.cs": {
+    "mtime": 1783404806.343837,
+    "ast_hash": "5b4f44d1895e501446c7079d92c76bef",
+    "semantic_hash": ""
+  },
+  "Assets/Scripts/Performance/DeviceTier.cs": {
+    "mtime": 1783401638.9962747,
+    "ast_hash": "674d109c4a4c41d867e29a58510a4233",
+    "semantic_hash": ""
+  },
+  "Assets/Scripts/Performance/FramePacer.cs": {
+    "mtime": 1782173511.547059,
+    "ast_hash": "c48e89123f116189273fe0195ce7ba4f",
+    "semantic_hash": ""
+  },
+  "Assets/Scripts/Performance/IDeviceProfiler.cs": {
+    "mtime": 1782173495.4253964,
+    "ast_hash": "a5a66a3ae0ab62601c8856f1ca8bf18b",
+    "semantic_hash": ""
+  },
+  "Assets/Scripts/Performance/SplatBudget.cs": {
+    "mtime": 1782173497.883917,
+    "ast_hash": "a538d39e939c3a5ac4373ef0f426b72f",
+    "semantic_hash": ""
+  },
+  "Assets/Scripts/Rendering/ISplatRenderer.cs": {
+    "mtime": 1782175265.3508096,
+    "ast_hash": "13ea4ed10144826dce7cbd6044a43925",
+    "semantic_hash": ""
+  },
+  "Assets/Scripts/Rendering/SplatCameraController.cs": {
+    "mtime": 1782175337.9008522,
+    "ast_hash": "db7ca878eac4b6cdb1ab47647252e984",
+    "semantic_hash": ""
+  },
+  "Assets/Scripts/Rendering/SplatData.cs": {
+    "mtime": 1782175262.4945908,
+    "ast_hash": "7c2674648b67e23e2b3f5fe10184514e",
+    "semantic_hash": ""
+  },
+  "Assets/Scripts/Rendering/SplatViewerController.cs": {
+    "mtime": 1783404908.805356,
+    "ast_hash": "26f37e589171827742fafc2793b54c7a",
+    "semantic_hash": ""
+  },
+  "Assets/Scripts/Rendering/UnityGaussianSplatAdapter.cs": {
+    "mtime": 1782175290.3637843,
+    "ast_hash": "776ec34d191e67012ffbfb71da024d4e",
+    "semantic_hash": ""
+  },
+  "Assets/Scripts/Tests/EditMode/AppFlowTests.cs": {
+    "mtime": 1782176364.0010307,
+    "ast_hash": "5cbb2b20f39b4bb7995bb6a403f65389",
+    "semantic_hash": ""
+  },
+  "Assets/Scripts/Tests/EditMode/BlurDetectorTests.cs": {
+    "mtime": 1782176375.029622,
+    "ast_hash": "3cf061f31ef9a5e6bb4ac321cb827eb9",
+    "semantic_hash": ""
+  },
+  "Assets/Scripts/Tests/EditMode/CoverageTrackerTests.cs": {
+    "mtime": 1782176377.4940603,
+    "ast_hash": "e6fc3ba8b947a2bf1c9c58e1a100dcbe",
+    "semantic_hash": ""
+  },
+  "Assets/Scripts/Tests/EditMode/FrameSelectorTests.cs": {
+    "mtime": 1782176368.6543858,
+    "ast_hash": "c8c40167fd327eb6266b5f95e5469b16",
+    "semantic_hash": ""
+  },
+  "Assets/Scripts/Tests/EditMode/SplatBudgetTests.cs": {
+    "mtime": 1782176371.4836566,
+    "ast_hash": "d28d6fec55a87b6e683de33fbd3365de",
+    "semantic_hash": ""
+  },
+  "Assets/Scripts/Tests/EditMode/SplatDataTests.cs": {
+    "mtime": 1782176380.5471253,
+    "ast_hash": "e9cf64c47553a07c6f97cdaf91512e8d",
+    "semantic_hash": ""
+  },
+  "Assets/Scripts/UI/Composition/AppBootstrap.cs": {
+    "mtime": 1782176227.7292871,
+    "ast_hash": "7ba82e5b9ecd9b8afb5fb25a9d99109f",
+    "semantic_hash": ""
+  },
+  "Assets/Scripts/UI/Composition/AppContext.cs": {
+    "mtime": 1783404927.1398468,
+    "ast_hash": "4163df63727f17cc7181ffdbc6cdb2ba",
+    "semantic_hash": ""
+  },
+  "Assets/Scripts/UI/Composition/ScreenManager.cs": {
+    "mtime": 1783404954.250314,
+    "ast_hash": "fb944e1dce72af27132da9642aff8ba7",
+    "semantic_hash": ""
+  },
+  "Assets/Scripts/UI/Haptics.cs": {
+    "mtime": 1783405167.2549345,
+    "ast_hash": "a99ec30a1a562c8ba18d6ca23134cb07",
+    "semantic_hash": ""
+  },
+  "Assets/Scripts/UI/Screens/AppScreen.cs": {
+    "mtime": 1783404951.8225565,
+    "ast_hash": "3e555bfb3f22ecf84f1344842905e9a9",
+    "semantic_hash": ""
+  },
+  "Assets/Scripts/UI/Screens/CaptureScreen.cs": {
+    "mtime": 1783405392.512751,
+    "ast_hash": "13524bbe24bddfad4051a0d4e1dfac05",
+    "semantic_hash": ""
+  },
+  "Assets/Scripts/UI/Screens/LibraryScreen.cs": {
+    "mtime": 1783405404.6757114,
+    "ast_hash": "7e5872c61d3219c2923a95a4efe7a0e3",
+    "semantic_hash": ""
+  },
+  "Assets/Scripts/UI/Screens/OnboardingScreen.cs": {
+    "mtime": 1783405407.6682773,
+    "ast_hash": "461e3c373eccba85f5a29c9d34d828d1",
+    "semantic_hash": ""
+  },
+  "Assets/Scripts/UI/Screens/ProcessingScreen.cs": {
+    "mtime": 1783404978.9774826,
+    "ast_hash": "b020d442e65dead69671267424471c5e",
+    "semantic_hash": ""
+  },
+  "Assets/Scripts/UI/Screens/ShareScreen.cs": {
+    "mtime": 1783404988.2741213,
+    "ast_hash": "19dd7eddc202578550b9ae176b382887",
+    "semantic_hash": ""
+  },
+  "Assets/Scripts/UI/Screens/ViewerScreen.cs": {
+    "mtime": 1783404974.5181754,
+    "ast_hash": "f2ed3e0980b149d197853b38dd63f829",
+    "semantic_hash": ""
+  },
+  "Assets/Scripts/UI/ToastView.cs": {
+    "mtime": 1783403670.6450925,
+    "ast_hash": "a2c75fe80298eaa832eb08dcfc0006fb",
+    "semantic_hash": ""
+  },
+  "Assets/Scripts/UI/UIComponents.cs": {
+    "mtime": 1783404962.0960562,
+    "ast_hash": "11d4dfc8ffe1deca1b80ae3c8623d83a",
+    "semantic_hash": ""
+  },
+  "Assets/Scripts/UI/UIFactory.cs": {
+    "mtime": 1782176738.5398934,
+    "ast_hash": "5f9e6371cc1317eaacf6def9dd4b70ec",
+    "semantic_hash": ""
+  },
+  "Packages/manifest.json": {
+    "mtime": 1783404646.7021186,
+    "ast_hash": "42dd5085aae4a0ca1854823c6af5ef1c",
+    "semantic_hash": ""
+  },
+  "scripts/graphify-auto-improve.ps1": {
+    "mtime": 1783403747.4888055,
+    "ast_hash": "46c3abd0789443c05da578aa7fd8069c",
+    "semantic_hash": ""
+  },
+  "scripts/run-local.ps1": {
+    "mtime": 1783403698.900226,
+    "ast_hash": "8cfa3e9992c6cf6e5240b893975035e6",
+    "semantic_hash": ""
+  },
+  ".claude/skills/teleport-native-app/SKILL.md": {
+    "mtime": 1783401638.9912758,
+    "ast_hash": "9684e852782157269b0b9797e46dde54",
+    "semantic_hash": ""
+  },
+  "AGENTS.md": {
+    "mtime": 1783401638.987276,
+    "ast_hash": "f094135b984f45104daae800e803fe0e",
+    "semantic_hash": ""
+  },
+  "BUILD.md": {
+    "mtime": 1782179773.1553898,
+    "ast_hash": "b52de70bb59d391b2fd43ad9b50f83ab",
+    "semantic_hash": ""
+  },
+  "ProjectSettings/ProjectVersion.txt": {
+    "mtime": 1783405025.2951133,
+    "ast_hash": "e4919beb1c6a107e0594cea475abcc09",
+    "semantic_hash": ""
+  },
+  "README.md": {
+    "mtime": 1783401638.9912758,
+    "ast_hash": "31ae9cbd67788811439337f7f41226d0",
+    "semantic_hash": ""
+  },
+  ".vscode/extensions.json": {
+    "mtime": 1783405051.067288,
+    "ast_hash": "a9819ba4d76ccd81cf1f7b18e06c77d0",
+    "semantic_hash": ""
+  },
+  ".vscode/launch.json": {
+    "mtime": 1783405051.074837,
+    "ast_hash": "b939dea735cf9d32842d6a2c44474427",
+    "semantic_hash": ""
+  },
+  ".vscode/settings.json": {
+    "mtime": 1783405051.0718136,
+    "ast_hash": "a8e7a2a8f10660d4a2ec105d46d0fd13",
+    "semantic_hash": ""
+  },
+  "Assets/Resources/config.json": {
+    "mtime": 1783405053.253054,
+    "ast_hash": "519b0cb55b6aa990ec5f328ed6ddd4a8",
+    "semantic_hash": ""
+  },
+  "Assets/Scripts/Editor/IosCiMenu.cs": {
+    "mtime": 1783405532.540083,
+    "ast_hash": "06402a5d349bdb77227ad99d5857bfb4",
+    "semantic_hash": ""
+  },
+  "Packages/packages-lock.json": {
+    "mtime": 1783404494.6146994,
+    "ast_hash": "fb527028162f07f33d83070897d3613e",
+    "semantic_hash": ""
+  },
+  "ProjectSettings/SceneTemplateSettings.json": {
+    "mtime": 1783405053.5240538,
+    "ast_hash": "eeb26e313b89cd9334b828428a4847ef",
+    "semantic_hash": ""
+  },
+  "scripts/install-iphone.ps1": {
+    "mtime": 1783405315.5580082,
+    "ast_hash": "55a31560e26b67219a0c913cba00b86f",
+    "semantic_hash": ""
+  },
+  "teleport-native.slnx": {
+    "mtime": 1783405053.0456996,
+    "ast_hash": "50c16bd613d8042fe03321f3957aa239",
+    "semantic_hash": ""
+  },
+  ".github/workflows/ios-ipa.yml": {
+    "mtime": 1783404821.7809956,
+    "ast_hash": "397e878ffa2a3a80c149fad058ebe72b",
+    "semantic_hash": ""
+  },
+  "codemagic.yaml": {
+    "mtime": 1783404827.4676466,
+    "ast_hash": "f8a380dc145b295c05d26b0283a6b3c6",
+    "semantic_hash": ""
+  },
+  "Assets/Scripts/UI/CaptureFlowLogic.cs": {
+    "mtime": 1783405382.1567857,
+    "ast_hash": "1654eb821c89fa9e67ba57a1b015dcc9",
+    "semantic_hash": ""
+  },
+  "Assets/Scripts/UI/UiChrome.cs": {
+    "mtime": 1783405380.466468,
+    "ast_hash": "3e5463b2f8b3ebd6b8f7e5dfe7c959d7",
+    "semantic_hash": ""
+  },
+  "IPHONE.md": {
+    "mtime": 1783405318.9575415,
+    "ast_hash": "6bfd269092784c6ef6dfc0482a43b313",
+    "semantic_hash": ""
+  },
+  "Assets/Scripts/Editor/ArSetupMenu.cs": {
+    "mtime": 1783405578.8605227,
+    "ast_hash": "24968b7694bccc82f59af8c366606a5a",
+    "semantic_hash": ""
+  },
+  "scripts/prepare-iphone.ps1": {
+    "mtime": 1783405538.7907643,
+    "ast_hash": "08dcf67f32d0acbe656d0cb5cdaafccf",
+    "semantic_hash": ""
+  }
+}

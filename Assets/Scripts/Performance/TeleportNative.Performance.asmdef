@@ -1,0 +1,13 @@
+{
+    "name": "TeleportNative.Performance",
+    "rootNamespace": "TeleportNative.Performance",
+    "references": [ "TeleportNative.Core" ],
+    "includePlatforms": [],
+    "excludePlatforms": [],
+    "allowUnsafeCode": false,
+    "overrideReferences": false,
+    "autoReferenced": false,
+    "defineConstraints": [],
+    "versionDefines": [],
+    "noEngineReferences": false
+}

@@ -1,0 +1,13 @@
+{
+    "name": "TeleportNative.Capture",
+    "rootNamespace": "TeleportNative.Capture",
+    "references": [ "TeleportNative.Core", "Unity.XR.ARFoundation", "Unity.XR.ARSubsystems", "Unity.Collections" ],
+    "includePlatforms": [],
+    "excludePlatforms": [],
+    "allowUnsafeCode": true,
+    "overrideReferences": false,
+    "autoReferenced": false,
+    "defineConstraints": [],
+    "versionDefines": [],
+    "noEngineReferences": false
+}

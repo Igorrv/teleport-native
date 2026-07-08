@@ -1,0 +1,57 @@
+workflows:
+  ios-sideload:
+    name: iOS IPA (Sideloadly)
+    max_build_duration: 90
+    instance_type: mac_mini_m2
+    environment:
+      groups:
+        # Crie em Codemagic > seu app > Environment variables:
+        #   APPLE_ID, APPLE_APP_SPECIFIC_PASSWORD (app-specific password)
+        - codemagic
+      vars:
+        UNITY_VERSION: 6000.5.2f1
+        BUNDLE_ID: com.teleportnative.app
+      xcode: latest
+      cocoapods: default
+    scripts:
+      - name: Unity export Xcode
+        script: |
+          set -e
+          "$UNITY_HOME/Contents/MacOS/Unity" -batchmode -nographics -quit \
+            -projectPath "$CM_BUILD_DIR" \
+            -executeMethod TeleportNative.Editor.IosCiMenu.PrepareForIosExport \
+            -logFile "$CM_BUILD_DIR/Build/codemagic-unity.log"
+      - name: Archive + IPA (development)
+        script: |
+          set -e
+          cd "$CM_BUILD_DIR/Build/Xcode"
+          xcodebuild -allowProvisioningUpdates \
+            -scheme Unity-iPhone \
+            -configuration Debug \
+            -destination 'generic/platform=iOS' \
+            -archivePath "$CM_BUILD_DIR/Build/ios/TeleportNative.xcarchive" \
+            archive
+          cat > "$CM_BUILD_DIR/Build/ios/ExportOptions.plist" <<'PLIST'
+          <?xml version="1.0" encoding="UTF-8"?>
+          <!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+          <plist version="1.0"><dict>
+            <key>method</key><string>development</string>
+            <key>teamID</key><string>$(DEVELOPMENT_TEAM)</string>
+            <key>signingStyle</key><string>automatic</string>
+          </dict></plist>
+          PLIST
+          xcodebuild -exportArchive \
+            -archivePath "$CM_BUILD_DIR/Build/ios/TeleportNative.xcarchive" \
+            -exportPath "$CM_BUILD_DIR/Build/ios/ipa" \
+            -exportOptionsPlist "$CM_BUILD_DIR/Build/ios/ExportOptions.plist" \
+            -allowProvisioningUpdates
+    artifacts:
+      - Build/ios/ipa/*.ipa
+      - Build/codemagic-unity.log
+    publishing:
+      email:
+        recipients:
+          - user@example.com
+        notify:
+          success: true
+          failure: true

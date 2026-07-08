@@ -1,0 +1,47 @@
+---
+description: Workflow token-eficiente para codar no teleport-native com graphify
+alwaysApply: true
+---
+
+# teleport-native — codar com menos tokens
+
+## Ordem obrigatória de contexto
+
+1. **`graphify-out/NAVIGATION.md`** — mapa compacto (~500 tokens). Leia isto em vez de varrer o repo.
+2. **`graphify query|path|explain`** — orientação cirúrgica antes de Read/Grep/Glob.
+3. **`AGENTS.md`** — só se precisar de decisões travadas ou milestones; nunca leia o arquivo inteiro por padrão.
+4. **`Read` de arquivos específicos** — apenas os caminhos que o grafo citou para a tarefa atual.
+
+## Proibido (gasta tokens à toa)
+
+- Ler diretórios inteiros ou múltiplos `.cs` "para entender o projeto"
+- Re-derivar arquitetura/decisões já documentadas em `AGENTS.md`
+- Grep amplo quando `graphify query` resolve
+- Reformatar ou refatorar código fora do escopo pedido
+
+## Após editar código C#
+
+```bash
+graphify update .
+```
+
+Roda AST-only (sem API). Mantém `graph.json`, `graph.html` e `GRAPH_REPORT.md` sincronizados.
+
+## Escopo por milestone (peça no chat)
+
+| Milestone | Pastas-alvo |
+|---|---|
+| M1 Viewer | `Assets/Scripts/Rendering/` |
+| M2 Captura | `Assets/Scripts/Capture/` |
+| M3 Nuvem | `Assets/Scripts/Network/` |
+| UI/fluxo | `Assets/Scripts/UI/` + `Core/App/AppFlow.cs` |
+
+## Formato ideal do pedido do usuário
+
+```
+[Milestone M?] [módulo] [arquivo ou símbolo se souber]
+Tarefa: ...
+Restrições: diff mínimo, não reabrir decisão X
+```
+
+Exemplo: `M2 Capture · ARCaptureSession · adicionar limite de frames sem reler Network/Rendering`

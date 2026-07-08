@@ -1,0 +1,13 @@
+{
+    "name": "TeleportNative.UI",
+    "rootNamespace": "TeleportNative.UI",
+    "references": [ "TeleportNative.Core", "TeleportNative.Performance", "TeleportNative.Capture", "TeleportNative.Network", "TeleportNative.Rendering", "UnityEngine.UI" ],
+    "includePlatforms": [],
+    "excludePlatforms": [],
+    "allowUnsafeCode": false,
+    "overrideReferences": false,
+    "autoReferenced": false,
+    "defineConstraints": [],
+    "versionDefines": [],
+    "noEngineReferences": false
+}

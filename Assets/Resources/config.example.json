@@ -1,0 +1,9 @@
+{
+  "_comment": "Copie para config.json e preencha. NUNCA versione a chave real; em producao use um endpoint de auth.",
+  "BackendBaseUrl": "https://SEU-GATEWAY-HOMEVIEW.com",
+  "ReconstructionProvider": "luma",
+  "ProviderApiKey": "COLE_SUA_CHAVE",
+  "BundleId": "com.teleportnative.app",
+  "AccountEnabled": false,
+  "DevHudEnabled": true
+}

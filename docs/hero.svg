@@ -1,0 +1,46 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1200" height="340" viewBox="0 0 1200 340" font-family="-apple-system, Segoe UI, Roboto, Helvetica, Arial, sans-serif">
+  <defs>
+    <linearGradient id="bg" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0" stop-color="#0A0B10"/>
+      <stop offset="1" stop-color="#14161F"/>
+    </linearGradient>
+    <radialGradient id="glow" cx="0.82" cy="0.30" r="0.55">
+      <stop offset="0" stop-color="#6D5DFB" stop-opacity="0.55"/>
+      <stop offset="1" stop-color="#6D5DFB" stop-opacity="0"/>
+    </radialGradient>
+    <linearGradient id="accent" x1="0" y1="0" x2="1" y2="0">
+      <stop offset="0" stop-color="#6D5DFB"/>
+      <stop offset="1" stop-color="#FFB23E"/>
+    </linearGradient>
+    <linearGradient id="dot" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0" stop-color="#9B8CFF"/>
+      <stop offset="1" stop-color="#FFB23E"/>
+    </linearGradient>
+    <pattern id="grid" width="40" height="40" patternUnits="userSpaceOnUse">
+      <path d="M40 0H0V40" fill="none" stroke="#FFFFFF" stroke-opacity="0.04" stroke-width="1"/>
+    </pattern>
+  </defs>
+
+  <rect width="1200" height="340" fill="url(#bg)"/>
+  <rect width="1200" height="340" fill="url(#grid)"/>
+  <rect width="1200" height="340" fill="url(#glow)"/>
+
+  <!-- splat / reconstrucao 3D (hemisferio de pontos) -->
+  <g fill="url(#dot)" opacity="0.95">
+    <circle cx="990" cy="170" r="6"/>
+    <circle cx="956" cy="150" r="5"/><circle cx="956" cy="192" r="5"/>
+    <circle cx="922" cy="132" r="5"/><circle cx="922" cy="170" r="6"/><circle cx="922" cy="208" r="5"/>
+    <circle cx="888" cy="150" r="4"/><circle cx="888" cy="192" r="4"/>
+    <circle cx="854" cy="162" r="4"/><circle cx="854" cy="180" r="4"/>
+    <circle cx="1024" cy="150" r="4"/><circle cx="1024" cy="192" r="4"/>
+    <circle cx="1058" cy="170" r="5"/>
+  </g>
+  <circle cx="990" cy="170" r="86" fill="none" stroke="#FFB23E" stroke-opacity="0.35" stroke-width="1.5"/>
+  <circle cx="990" cy="170" r="118" fill="none" stroke="#6D5DFB" stroke-opacity="0.25" stroke-width="1"/>
+
+  <!-- wordmark -->
+  <text x="70" y="148" font-size="58" font-weight="700" fill="#F4F6FB" letter-spacing="-1">teleport<tspan fill="#6D5DFB">-</tspan>native</text>
+  <rect x="72" y="170" width="120" height="5" rx="2.5" fill="url(#accent)"/>
+  <text x="70" y="212" font-size="23" fill="#C3C9D6" font-weight="400">Capture ambientes reais  ·  Reconstrua em 3D  ·  Navegue a 60 fps</text>
+  <text x="70" y="252" font-size="17" fill="#8A91A3">Unity 6 LTS · AR Foundation · Gaussian Splatting · iOS &amp; Android</text>
+</svg>

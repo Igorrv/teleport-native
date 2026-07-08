@@ -1,0 +1,13 @@
+{
+    "name": "TeleportNative.Tests.EditMode",
+    "rootNamespace": "TeleportNative.Tests",
+    "references": [ "TeleportNative.Core", "TeleportNative.Capture", "TeleportNative.Performance", "TeleportNative.Rendering", "UnityEngine.TestRunner", "nunit.framework" ],
+    "includePlatforms": [ "Editor" ],
+    "excludePlatforms": [],
+    "allowUnsafeCode": false,
+    "overrideReferences": true,
+    "autoReferenced": false,
+    "defineConstraints": [],
+    "versionDefines": [],
+    "noEngineReferences": false
+}

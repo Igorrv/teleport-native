@@ -1,0 +1,13 @@
+{
+    "name": "TeleportNative.Network",
+    "rootNamespace": "TeleportNative.Network",
+    "references": [ "TeleportNative.Core", "TeleportNative.Capture", "Newtonsoft.Json" ],
+    "includePlatforms": [],
+    "excludePlatforms": [],
+    "allowUnsafeCode": false,
+    "overrideReferences": false,
+    "autoReferenced": false,
+    "defineConstraints": [],
+    "versionDefines": [],
+    "noEngineReferences": false
+}
