@@ -5,8 +5,11 @@
   <key>method</key>
   <string>development</string>
   <key>signingStyle</key>
-  <string>automatic</string>
+  <string>manual</string>
   <key>compileBitcode</key>
   <false/>
+  <key>thinning</key>
+  <string>&lt;none&gt;</string>
+  <!-- teamID e provisioningProfiles sao preenchidos pelo CI (scripts/ios/sign-and-export.sh) -->
 </dict>
 </plist>

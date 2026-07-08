@@ -132,7 +132,15 @@ namespace TeleportNative.Editor
                     File.WriteAllText(podfile, PodfileTemplate + "\n# Unity Podfile original substituido — ajuste se necessario.\n");
             }
 
-            File.WriteAllText(Path.Combine(iosRoot, "ExportOptions.plist"), ExportOptionsPlist);
+            var exportPath = Path.Combine(iosRoot, "ExportOptions.plist");
+            // Preserva ExportOptions gerado pelo IosCiPostProcessor (copiado de Build/iOS).
+            if (File.Exists(exportPath))
+            {
+                var existing = File.ReadAllText(exportPath);
+                if (existing.Contains("teamID") && existing.Contains("manual"))
+                    return;
+            }
+            File.WriteAllText(exportPath, ExportOptionsPlist);
         }
 
         private static void CopyDirectory(string src, string dst)

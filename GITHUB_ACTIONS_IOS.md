@@ -1,126 +1,133 @@
-# GitHub Actions — Build iOS (IPA)
+# GitHub Actions — Build iOS (IPA assinado)
 
-Pipeline: **GitHub → macOS runner → Unity 6000.5.2f1 → Xcode → IPA artifact**
+Pipeline: **Unity 6000.5.2f1 → Xcode → archive → exportArchive → TeleportNative.ipa**
 
 Arquivo: `.github/workflows/ios-build.yml`
 
 ---
 
-## Análise do projeto (iOS)
+## Por que o erro 0xe8008019?
 
-| Item | Valor |
-|------|--------|
-| Unity | **6000.5.2f1** (`eb73d3b415a1`) |
-| Bundle ID | `com.teleportnative.app` |
-| iOS mínimo | 15.0 |
-| Backend scripting | IL2CPP + ARM64 |
-| Cena principal | `Assets/Main.unity` |
+O IPA anterior era **unsigned** (zip manual do Payload). O iPhone exige assinatura válida em:
 
-### Dependências nativas / XR
+- App principal
+- `UnityRuntime.framework`
+- `UnityFramework.framework`
+- Demais frameworks embarcados
 
-| Pacote | Uso |
-|--------|-----|
-| `com.unity.xr.arkit` 6.5.0 | ARKit (câmera AR) |
-| `com.unity.xr.arfoundation` 6.5.0 | AR Foundation |
-| `com.unity.xr.management` | XR plug-in loader |
-| `org.nesnausk.gaussian-splatting` (git) | Viewer splats — **requer internet no CI** |
-| URP 17.5.0 | Render pipeline |
-
-### Frameworks iOS (via ARKit / Unity)
-
-- **ARKit**, **AVFoundation**, **CoreMotion** (câmera + tracking)
-- Permissão câmera: `cameraUsageDescription` em ProjectSettings
-
-### Correções aplicadas
-
-- Removidos `com.unity.ai.assistant` e `com.unity.ai.inference` (não usados, pre-release)
-- Entry point CI: `TeleportNative.Editor.BuildiOS.Build`
-- Export: `ExportIosProject` → pasta `ios/`
-
-### Riscos conhecidos
-
-| Risco | Mitigação |
-|-------|-----------|
-| Pacote git Gaussian Splatting | Runner precisa de rede; primeiro build ~40–90 min |
-| Licença Unity | Secrets `UNITY_LICENSE` + email/password |
-| IPA no device | Fase 1: IPA **unsigned** → Sideloadly assina no Windows |
-| ARKit no simulador | Teste real só em iPhone físico |
+A pipeline agora usa o fluxo oficial Apple: `xcodebuild archive` + `xcodebuild -exportArchive` + validação `codesign --verify`.
 
 ---
 
-## Secrets no GitHub
-
-Repositório → **Settings** → **Secrets and variables** → **Actions** → **New repository secret**
-
-### Obrigatórias (Unity)
+## Secrets Unity (obrigatórias)
 
 | Secret | Como obter |
 |--------|------------|
-| `UNITY_LICENSE` | Rode `.\scripts\setup-unity-license.ps1` → copie **todo** o `.ulf` |
-| `UNITY_EMAIL` | Email da conta Unity (Personal grátis) |
-| `UNITY_PASSWORD` | Senha da conta Unity |
+| `UNITY_LICENSE` | Conteúdo de `C:\ProgramData\Unity\Unity_lic.ulf` |
+| `UNITY_EMAIL` | Email conta Unity |
+| `UNITY_PASSWORD` | Senha conta Unity |
 
-> **Não** precisa de serial/key — conta Personal basta.
+---
 
-### Opcionais (IPA já assinado)
+## Secrets Apple (obrigatórias para IPA instalável)
 
-| Secret | Conteúdo |
-|--------|----------|
-| `APPLE_CERTIFICATE` | Arquivo `.p12` codificado em **base64** |
-| `APPLE_CERTIFICATE_PASSWORD` | Senha do `.p12` |
-| `APPLE_PROVISIONING_PROFILE` | `.mobileprovision` em **base64** |
-| `KEYCHAIN_PASSWORD` | Senha aleatória para keychain temporário |
+Repositório → **Settings → Secrets and variables → Actions → New repository secret**
+
+### 1. `APPLE_CERTIFICATE_BASE64`
+
+Certificado **Apple Development** (.p12):
+
+1. Mac: Keychain Access → certificado "Apple Development: …" → Exportar → `.p12`
+2. Windows (sem Mac): [developer.apple.com](https://developer.apple.com) → Certificates → baixe e converta, ou use Mac emprestado uma vez
+3. Encode:
+
+```powershell
+[Convert]::ToBase64String([IO.File]::ReadAllBytes("C:\caminho\dev.p12"))
+```
+
+Ou: `.\scripts\setup-apple-secrets.ps1 -CertPath "..." -ProfilePath "..."`
+
+Cole **toda** a string base64 na secret.
+
+### 2. `APPLE_CERTIFICATE_PASSWORD`
+
+Senha definida ao exportar o `.p12`.
+
+### 3. `APPLE_PROVISIONING_PROFILE_BASE64`
+
+Profile **iOS App Development** para `com.teleportnative.app`:
+
+1. [developer.apple.com](https://developer.apple.com) → Profiles → **+** → iOS App Development
+2. App ID: `com.teleportnative.app` (habilite ARKit se pedido)
+3. Selecione seu certificado Development
+4. Baixe `.mobileprovision`
+5. Encode:
+
+```powershell
+[Convert]::ToBase64String([IO.File]::ReadAllBytes("C:\caminho\Teleport.mobileprovision"))
+```
+
+### 4. `APPLE_TEAM_ID`
+
+Team ID de 10 caracteres (ex: `AB12CD34EF`):
+
+- [developer.apple.com/account](https://developer.apple.com/account) → Membership → **Team ID**
+
+### 5. `APPLE_SIGNING_IDENTITY`
+
+Nome **exato** do certificado no Keychain:
+
+```
+Apple Development: Seu Nome (XXXXXXXXXX)
+```
+
+No Mac: Keychain Access → My Certificates → copie o nome completo.
+
+### 6. `KEYCHAIN_PASSWORD`
+
+String aleatória para keychain temporária do CI (ex: `ci-keychain-a8f3b2c1`). Não precisa ser a senha Apple.
 
 ---
 
 ## Executar o workflow
 
-1. [github.com/Igorrv/teleport-native/actions](https://github.com/Igorrv/teleport-native/actions)
-2. **iOS Build** → **Run workflow**
-3. **signed**: `false` (padrão) → IPA unsigned para Sideloadly
-4. Aguarde conclusão (~40–90 min no 1º run)
+1. Configure **todas** as secrets acima
+2. [Actions → iOS Build → Run workflow](https://github.com/Igorrv/teleport-native/actions)
+3. Aguarde ~20–90 min
+4. Baixe artifact **`TeleportNative-ipa`** → `TeleportNative.ipa`
 
 ---
 
-## Baixar o IPA
+## Instalar no iPhone
 
-1. Workflow concluído (verde)
-2. **Summary** → **Artifacts**
-3. Baixe `teleport-native-unsigned-ipa` ou `teleport-native-signed-ipa`
-4. Extraia o `.ipa`
+IPA **já assinado** — instale via:
 
----
+- **Xcode** → Window → Devices → drag IPA (Mac)
+- **Apple Configurator** (Mac)
+- **TestFlight** (futuro, conta paga)
 
-## Instalar no iPhone (Windows)
-
-```powershell
-cd C:\xampp\htdocs\GLM-5.2\teleport-native
-.\scripts\install-iphone.ps1 -IpaPath "C:\Downloads\TeleportNative-unsigned.ipa"
-```
-
-- Cabo USB + Sideloadly + Apple ID
-- iPhone: confiar perfil em Ajustes → Geral → VPN e Gerenciamento
+No Windows, perfil Development expira em 7 dias; reinstale ou use TestFlight.
 
 ---
 
-## Build local (Mac)
+## Validação no CI
+
+O script `scripts/ios/sign-and-export.sh` executa:
 
 ```bash
-chmod +x scripts/build_ios.sh
-./scripts/build_ios.sh
+codesign --verify --deep --strict --verbose=2 Payload/*.app
+codesign --verify --verbose=2 Payload/*.app/Frameworks/UnityRuntime.framework
 ```
 
-Ou:
-
-```bash
-Unity -batchmode -quit -executeMethod TeleportNative.Editor.BuildiOS.Build
-```
+Se falhar, o workflow para antes de publicar o artifact.
 
 ---
 
-## Próximos passos
+## Arquivos do pipeline
 
-1. Configurar secrets Unity no GitHub
-2. Rodar workflow **iOS Build**
-3. Baixar artifact e instalar via Sideloadly
-4. (Opcional) Adicionar secrets Apple e rodar com **signed = true**
+| Arquivo | Função |
+|---------|--------|
+| `Assets/Scripts/Editor/IosCiPostProcessor.cs` | Team ID + signing no Xcode exportado |
+| `Assets/Scripts/Editor/TeleportNativeIosExport.cs` | Export Unity → ios/ |
+| `scripts/ios/sign-and-export.sh` | Keychain, archive, export, validação |
+| `ios/ExportOptions.plist` | Template development (CI preenche team/profile) |
