@@ -1,15 +1,12 @@
 workflows:
   ios-sideload:
-
     name: Teleport Native - iOS IPA
 
     max_build_duration: 120
 
     instance_type: mac_mini_m2
 
-
     environment:
-
       groups:
         - codemagic
 
@@ -26,87 +23,57 @@ workflows:
         - $CM_BUILD_DIR/Library
 
 
-
     scripts:
 
-
       - name: Check Environment
-
         script: |
           set -e
 
-          echo "================================="
-          echo "Teleport Native iOS Build"
-          echo "================================="
-
-          echo "Build directory:"
+          echo "Teleport Native Build"
+          echo "Build path:"
           echo "$CM_BUILD_DIR"
 
-          echo "Applications:"
           ls -la /Applications
-
-          echo "Unity folders:"
-          ls -la /Applications/Unity || true
-
 
 
       - name: Locate Unity
-
         script: |
           set -e
 
-
           if [ -x "/Applications/Unity/Unity.app/Contents/MacOS/Unity" ]; then
-
             UNITY_BIN="/Applications/Unity/Unity.app/Contents/MacOS/Unity"
 
           elif [ -x "/Applications/Unity.app/Contents/MacOS/Unity" ]; then
-
             UNITY_BIN="/Applications/Unity.app/Contents/MacOS/Unity"
 
           else
-
             UNITY_BIN=$(find /Applications -path "*Unity.app/Contents/MacOS/Unity" | head -1)
-
           fi
 
 
           if [ -z "$UNITY_BIN" ]; then
-
-            echo "Unity executable not found"
-
+            echo "Unity not found"
             find /Applications -iname "*unity*" || true
-
             exit 1
-
           fi
 
 
-          echo "Unity executable:"
+          echo "Unity:"
           echo "$UNITY_BIN"
 
-
           "$UNITY_BIN" -version
-
 
           echo "UNITY_BIN=$UNITY_BIN" >> $CM_ENV
 
 
 
-
-      - name: Unity Export Xcode
-
+      - name: Unity export Xcode
         script: |
           set -e
 
-
           source $CM_ENV
 
-
           mkdir -p "$CM_BUILD_DIR/Build"
-
-
-          echo "Running Unity export"
 
 
           "$UNITY_BIN" \
@@ -118,31 +85,24 @@ workflows:
           -logFile "$CM_BUILD_DIR/Build/codemagic-unity.log"
 
 
-
           if [ ! -d "$CM_BUILD_DIR/Build/Xcode" ]; then
-
-            echo "Xcode project was not generated"
+            echo "Xcode export failed"
 
             cat "$CM_BUILD_DIR/Build/codemagic-unity.log" || true
 
             exit 1
-
           fi
 
 
 
-
-      - name: Build Xcode Archive
-
+      - name: Build Archive
         script: |
           set -e
-
 
           cd "$CM_BUILD_DIR/Build/Xcode"
 
 
           mkdir -p "$CM_BUILD_DIR/Build/ios"
-
 
 
           xcodebuild \
@@ -155,33 +115,26 @@ workflows:
 
 
 
-
-
-      - name: Create IPA
-
+      - name: Export IPA
         script: |
           set -e
 
 
-          cat > "$CM_BUILD_DIR/Build/ios/ExportOptions.plist" <<'PLIST'
-<?xml version="1.0" encoding="UTF-8"?>
-<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+          mkdir -p "$CM_BUILD_DIR/Build/ios"
 
-<plist version="1.0">
 
-<dict>
-
-<key>method</key>
-<string>development</string>
-
-<key>signingStyle</key>
-<string>automatic</string>
-
-</dict>
-
-</plist>
-PLIST
-
+          printf '%s\n' \
+          '<?xml version="1.0" encoding="UTF-8"?>' \
+          '<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">' \
+          '<plist version="1.0">' \
+          '<dict>' \
+          '<key>method</key>' \
+          '<string>development</string>' \
+          '<key>signingStyle</key>' \
+          '<string>automatic</string>' \
+          '</dict>' \
+          '</plist>' \
+          > "$CM_BUILD_DIR/Build/ios/ExportOptions.plist"
 
 
           xcodebuild \
@@ -193,24 +146,16 @@ PLIST
 
 
 
-
     artifacts:
-
       - Build/ios/ipa/*.ipa
-
       - Build/codemagic-unity.log
 
 
-
     publishing:
-
       email:
-
         recipients:
-
           - user@example.com
 
         notify:
-
           success: true
           failure: true
