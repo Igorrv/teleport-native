@@ -3,7 +3,7 @@ workflows:
 
     name: Teleport Native - iOS IPA
 
-    max_build_duration: 180
+    max_build_duration: 120
 
     instance_type: mac_mini_m2
 
