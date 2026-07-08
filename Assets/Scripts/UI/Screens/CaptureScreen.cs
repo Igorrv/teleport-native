@@ -183,10 +183,13 @@ namespace TeleportNative.UI
                 yield break;
             }
 
-            var starter = Ctx.Capture.GetComponent<ArSessionStarter>();
-            if (starter == null)
-                starter = Ctx.Capture.gameObject.AddComponent<ArSessionStarter>();
-            starter.EnsureRunning();
+            if (Ctx.ArRig != null)
+            {
+                var starter = Ctx.ArRig.GetComponent<ArSessionStarter>();
+                if (starter == null)
+                    starter = Ctx.ArRig.AddComponent<ArSessionStarter>();
+                starter.EnsureRunning();
+            }
 
             if (!_subscribed)
             {
