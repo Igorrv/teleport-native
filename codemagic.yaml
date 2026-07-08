@@ -14,76 +14,146 @@ workflows:
       groups:
         - codemagic
 
+
       vars:
+
         UNITY_VERSION: "6000.5.2f1"
+
+        UNITY_CHANGESET: "eb73d3b415a1"
+
         BUNDLE_ID: "com.teleportnative.app"
 
+
       xcode: latest
+
       cocoapods: default
+
 
 
     cache:
 
       cache_paths:
 
+        - /Applications/Unity
+
         - $CM_BUILD_DIR/Library
 
         - $HOME/Library/Caches/com.unity3d.UnityEditor
 
-        - $HOME/Library/Application Support/Unity
+        - $HOME/.local/share/unity3d
+
 
 
     scripts:
 
 
-      - name: Locate Unity
+
+      - name: Install Unity Editor
 
         script: |
 
           set -e
 
-          echo "Searching Unity..."
 
-          UNITY_BIN=$(find /Applications -path "*Unity.app/Contents/MacOS/Unity" -type f | head -1)
+          UNITY_PATH="/Applications/Unity/Unity-$UNITY_VERSION/Unity.app/Contents/MacOS/Unity"
 
 
-          if [ -z "$UNITY_BIN" ]; then
 
-            echo "Unity executable not found"
+          echo "Checking Unity..."
 
-            exit 1
+
+
+          if [ -f "$UNITY_PATH" ]; then
+
+
+              echo "Unity already installed"
+
+          else
+
+
+              echo "Installing Unity $UNITY_VERSION"
+
+
+
+              curl -L \
+              "https://download.unity3d.com/download_unity/$UNITY_CHANGESET/MacEditorInstaller/Unity-$UNITY_VERSION.pkg" \
+              -o /tmp/unity.pkg
+
+
+
+              sudo installer \
+              -pkg /tmp/unity.pkg \
+              -target /
+
+
 
           fi
 
 
+
+          if [ ! -f "$UNITY_PATH" ]; then
+
+              echo "Unity executable missing after installation"
+
+              find /Applications -name Unity -type f
+
+              exit 1
+
+          fi
+
+
+
           echo "Unity found:"
-          echo "$UNITY_BIN"
 
-
-          echo "UNITY_BIN=$UNITY_BIN" >> $CM_ENV
-
+          echo "$UNITY_PATH"
 
 
 
+          echo "UNITY_BIN=$UNITY_PATH" >> $CM_ENV
 
-      - name: Unity License Check
+
+
+
+
+      - name: Unity License
 
         script: |
 
           set -e
 
+
           source $CM_ENV
 
 
-          if [ -z "$UNITY_LICENSE" ]; then
+
+          mkdir -p "$HOME/.local/share/unity3d/Unity"
 
 
-            echo "No UNITY_LICENSE found"
 
-            echo "Creating ALF file..."
+          if [ -n "$UNITY_LICENSE" ]; then
 
 
-            "$UNITY_BIN" \
+              echo "Using UNITY_LICENSE"
+
+
+
+              echo "$UNITY_LICENSE" \
+              > "$HOME/.local/share/unity3d/Unity/Unity_lic.ulf"
+
+
+
+          else
+
+
+              echo "UNITY_LICENSE not found"
+
+
+
+              echo "Generating ALF"
+
+
+
+              "$UNITY_BIN" \
               -batchmode \
               -nographics \
               -quit \
@@ -91,33 +161,20 @@ workflows:
               -logFile -
 
 
-            echo ""
-            echo "================================"
-            echo "UPLOAD THE GENERATED .alf FILE"
-            echo "================================"
+
+              echo "Generated files:"
 
 
-            find "$CM_BUILD_DIR" -name "*.alf"
+
+              find "$CM_BUILD_DIR" -name "*.alf"
 
 
-            exit 1
 
+              exit 1
 
-          else
-
-
-            echo "Unity license detected"
-
-
-            mkdir -p "$HOME/.local/share/unity3d/Unity"
-
-
-            echo "$UNITY_LICENSE" \
-            > "$HOME/.local/share/unity3d/Unity/Unity_lic.ulf"
 
 
           fi
-
 
 
 
@@ -129,10 +186,13 @@ workflows:
 
           set -e
 
+
           source $CM_ENV
 
 
+
           mkdir -p "$CM_BUILD_DIR/Build"
+
 
 
           "$UNITY_BIN" \
@@ -147,30 +207,7 @@ workflows:
 
 
 
-
-
-      - name: Install Pods
-
-        script: |
-
-          set -e
-
-
-          if [ -d "$CM_BUILD_DIR/Build/Xcode" ]; then
-
-            cd "$CM_BUILD_DIR/Build/Xcode"
-
-            pod install || true
-
-          fi
-
-
-
-
-
-
-
-      - name: Build iOS Archive
+      - name: Install CocoaPods
 
         script: |
 
@@ -180,19 +217,42 @@ workflows:
           cd "$CM_BUILD_DIR/Build/Xcode"
 
 
+          pod install || true
+
+
+
+
+
+      - name: Build Xcode Archive
+
+        script: |
+
+          set -e
+
+
+          cd "$CM_BUILD_DIR/Build/Xcode"
+
+
+
           mkdir -p "$CM_BUILD_DIR/Build/ios"
 
 
+
           xcodebuild \
+
           -workspace Unity-iPhone.xcworkspace \
+
           -scheme Unity-iPhone \
+
           -configuration Release \
+
           -destination generic/platform=iOS \
+
           -archivePath "$CM_BUILD_DIR/Build/ios/TeleportNative.xcarchive" \
+
           archive \
+
           -allowProvisioningUpdates
-
-
 
 
 
@@ -205,7 +265,9 @@ workflows:
           set -e
 
 
+
           mkdir -p "$CM_BUILD_DIR/Build/ios/ipa"
+
 
 
           python3 <<'PY'
@@ -220,7 +282,7 @@ workflows:
           )
 
 
-          options = {
+          data = {
 
               "method": "development",
 
@@ -231,24 +293,26 @@ workflows:
 
           with open(path, "wb") as f:
 
-              plistlib.dump(options, f)
+              plistlib.dump(data, f)
 
 
-          print("Created:")
-          print(path)
+          print("ExportOptions created")
 
           PY
 
 
 
           xcodebuild \
+
           -exportArchive \
+
           -archivePath "$CM_BUILD_DIR/Build/ios/TeleportNative.xcarchive" \
+
           -exportPath "$CM_BUILD_DIR/Build/ios/ipa" \
+
           -exportOptionsPlist "$CM_BUILD_DIR/Build/ios/ExportOptions.plist" \
+
           -allowProvisioningUpdates
-
-
 
 
 
@@ -266,7 +330,6 @@ workflows:
 
 
 
-
     publishing:
 
 
@@ -279,6 +342,7 @@ workflows:
 
 
         notify:
+
 
           success: true
 
