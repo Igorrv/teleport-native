@@ -1,57 +1,208 @@
 workflows:
   ios-sideload:
-    name: iOS IPA (Sideloadly)
-    max_build_duration: 90
+    name: Teleport Native - iOS IPA
+
+    max_build_duration: 120
+
     instance_type: mac_mini_m2
+
     environment:
-      groups:
-        # Crie em Codemagic > seu app > Environment variables:
-        #   APPLE_ID, APPLE_APP_SPECIFIC_PASSWORD (app-specific password)
-        - codemagic
+
       vars:
-        UNITY_VERSION: 6000.5.2f1
-        BUNDLE_ID: com.teleportnative.app
+        UNITY_VERSION: "6000.5.2f1"
+        BUNDLE_ID: "com.teleportnative.app"
+
+      groups:
+        - codemagic
+
       xcode: latest
       cocoapods: default
+
+
+    cache:
+      cache_paths:
+        - $CM_BUILD_DIR/Library
+
+
     scripts:
+
+      # -----------------------------------------
+      # Verifica ambiente
+      # -----------------------------------------
+
+      - name: Check environment
+        script: |
+          set -e
+
+          echo "=============================="
+          echo "Teleport Native Build"
+          echo "=============================="
+
+          echo "Build directory:"
+          echo $CM_BUILD_DIR
+
+          echo "Unity version:"
+          echo $UNITY_VERSION
+
+          echo "Machine:"
+          uname -a
+
+          echo "Applications:"
+          ls /Applications || true
+
+
+
+      # -----------------------------------------
+      # Localiza Unity
+      # -----------------------------------------
+
+      - name: Find Unity
+        script: |
+          set -e
+
+
+          echo "Searching Unity..."
+
+          UNITY_APP=$(find /Applications \
+          -maxdepth 5 \
+          -name "Unity.app" \
+          | head -1)
+
+
+          if [ -z "$UNITY_APP" ]; then
+
+            echo "ERROR:"
+            echo "Unity was not found."
+
+            echo ""
+            echo "Installed applications:"
+            ls /Applications
+
+            exit 1
+
+          fi
+
+
+          echo "Unity found:"
+          echo "$UNITY_APP"
+
+
+          echo "UNITY_APP=$UNITY_APP" >> $CM_ENV
+
+
+
+      # -----------------------------------------
+      # Export Unity para Xcode
+      # -----------------------------------------
+
       - name: Unity export Xcode
         script: |
           set -e
-          "$UNITY_HOME/Contents/MacOS/Unity" -batchmode -nographics -quit \
-            -projectPath "$CM_BUILD_DIR" \
-            -executeMethod TeleportNative.Editor.IosCiMenu.PrepareForIosExport \
-            -logFile "$CM_BUILD_DIR/Build/codemagic-unity.log"
-      - name: Archive + IPA (development)
+
+          source $CM_ENV
+
+
+          mkdir -p "$CM_BUILD_DIR/Build"
+
+
+          UNITY="$UNITY_APP/Contents/MacOS/Unity"
+
+
+          echo "Running:"
+          echo "$UNITY"
+
+
+          "$UNITY" \
+          -batchmode \
+          -nographics \
+          -quit \
+          -projectPath "$CM_BUILD_DIR" \
+          -executeMethod TeleportNative.Editor.IosCiMenu.PrepareForIosExport \
+          -logFile "$CM_BUILD_DIR/Build/codemagic-unity.log"
+
+
+
+      # -----------------------------------------
+      # Build Xcode Archive
+      # -----------------------------------------
+
+      - name: Build iOS Archive
         script: |
+
           set -e
+
+
           cd "$CM_BUILD_DIR/Build/Xcode"
-          xcodebuild -allowProvisioningUpdates \
-            -scheme Unity-iPhone \
-            -configuration Debug \
-            -destination 'generic/platform=iOS' \
-            -archivePath "$CM_BUILD_DIR/Build/ios/TeleportNative.xcarchive" \
-            archive
-          cat > "$CM_BUILD_DIR/Build/ios/ExportOptions.plist" <<'PLIST'
+
+
+          mkdir -p "$CM_BUILD_DIR/Build/ios"
+
+
+          xcodebuild \
+          -allowProvisioningUpdates \
+          -scheme Unity-iPhone \
+          -configuration Debug \
+          -destination "generic/platform=iOS" \
+          -archivePath "$CM_BUILD_DIR/Build/ios/TeleportNative.xcarchive" \
+          archive
+
+
+
+      # -----------------------------------------
+      # Export IPA
+      # -----------------------------------------
+
+      - name: Export IPA
+        script: |
+
+          set -e
+
+
+          cat > "$CM_BUILD_DIR/Build/ios/ExportOptions.plist" <<EOF
           <?xml version="1.0" encoding="UTF-8"?>
           <!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
-          <plist version="1.0"><dict>
-            <key>method</key><string>development</string>
-            <key>teamID</key><string>$(DEVELOPMENT_TEAM)</string>
-            <key>signingStyle</key><string>automatic</string>
-          </dict></plist>
-          PLIST
-          xcodebuild -exportArchive \
-            -archivePath "$CM_BUILD_DIR/Build/ios/TeleportNative.xcarchive" \
-            -exportPath "$CM_BUILD_DIR/Build/ios/ipa" \
-            -exportOptionsPlist "$CM_BUILD_DIR/Build/ios/ExportOptions.plist" \
-            -allowProvisioningUpdates
+          <plist version="1.0">
+          <dict>
+
+            <key>method</key>
+            <string>development</string>
+
+            <key>signingStyle</key>
+            <string>automatic</string>
+
+          </dict>
+          </plist>
+          EOF
+
+
+
+          xcodebuild \
+          -exportArchive \
+          -archivePath "$CM_BUILD_DIR/Build/ios/TeleportNative.xcarchive" \
+          -exportPath "$CM_BUILD_DIR/Build/ios/ipa" \
+          -exportOptionsPlist "$CM_BUILD_DIR/Build/ios/ExportOptions.plist" \
+          -allowProvisioningUpdates
+
+
+
     artifacts:
+
       - Build/ios/ipa/*.ipa
+
       - Build/codemagic-unity.log
+
+
+
     publishing:
+
       email:
+
         recipients:
+
           - user@example.com
+
         notify:
+
           success: true
+
           failure: true
